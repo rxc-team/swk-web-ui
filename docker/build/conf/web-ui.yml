@@ -1,0 +1,34 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: web-ui 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      name: web-ui-lp 
+      component: microservice 
+      role: lp 
+  template: 
+    metadata: 
+      labels: 
+        name: web-ui-lp 
+        component: microservice 
+        role: lp 
+    spec: 
+      containers: 
+      - name: web-ui 
+        image: gcr.io/{{ PROJECT_ID }}/web-ui:{{ IMAGE }}
+        imagePullPolicy: Always 
+        env: 
+          - name: ENV 
+            value: {{ ENV }}
+          - name: API_ADDRESS 
+            value: "minio-api" 
+          - name: API_SERVER_PORT 
+            value: '8080' 
+        ports: 
+        - containerPort: 80 
+          hostPort: 80 
+      nodeSelector: 
+        cloud.google.com/gke-nodepool: {{ NODE_POOL }}

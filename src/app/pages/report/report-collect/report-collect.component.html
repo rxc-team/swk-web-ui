@@ -1,0 +1,323 @@
+<div>
+  <div style="padding: 10px 0">
+    <i nz-icon nzType="table" nzRotate="40" style="font-size: 2em; vertical-align: middle"></i>
+    <a style="padding: 0 16px">
+      <span style="font-size: 2em">{{ 'page.coldata.name' | translate }}</span>
+      <span class="update">
+        {{ 'common.text.updateDate' | translate }}
+        <span *ngIf="!update">{{ lastUpdateTime | distance }}</span>
+        <button nz-button nzType="primary" nzSize="small" (click)="genColData()">
+          <i nz-icon nzType="sync"></i>
+        </button>
+      </span>
+    </a>
+  </div>
+
+  <div class="search" nz-col nzSpan="24">
+    <nz-collapse [nzBordered]="true">
+      <nz-collapse-panel [nzHeader]="'common.text.search' | translate">
+        <form nz-form [formGroup]="seachForm" nzLayout="inline">
+          <nz-form-item style="margin: 16px 30px">
+            <nz-form-label nzFor="keiyakuno">{{ 'page.coldata.keiyakuno' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="keiyakuno" trim="blur"
+                [placeholder]="'common.placeholder.input' | translate: { label: 'page.coldata.keiyakuno' | translate }"
+                style="width: 220px" />
+            </nz-form-control>
+            <nz-form-label style="margin: 0px 10px" nzFor="coldate">{{ 'page.coldata.keiyakuymd' | translate
+              }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker formControlName="coldate" nzAllowClear style="width: 180px"
+                nzMode="month"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item style="margin: 16px 30px">
+            <nz-form-control [nzSpan]="24">
+              <nz-space>
+                <div *nzSpaceItem>
+                  <!-- 检索 -->
+                  <button nz-button nzType="primary" (click)="search(true)">
+                    <i nz-icon nzType="search"></i>
+                    {{ 'common.button.search' | translate }}
+                  </button>
+                </div>
+                <div *nzSpaceItem>
+                  <nz-button-group>
+                    <!-- 重置 -->
+                    <button nz-button nzType="default" (click)="reset()">
+                      <i nz-icon nzType="redo"></i>
+                      {{ 'common.button.reset' | translate }}
+                    </button>
+                  </nz-button-group>
+                </div>
+                <!-- <div *nzSpaceItem>
+                  <nz-switch style="margin-left: 4px" [(ngModel)]="conditionType" nzSize="default"
+                    [ngModelOptions]="{ standalone: true }" nzCheckedChildren="and"
+                    nzUnCheckedChildren="or"></nz-switch>
+                </div> -->
+              </nz-space>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </nz-collapse-panel>
+    </nz-collapse>
+  </div>
+  <div style="margin-top: 16px">
+    <button nz-button nzType="primary" (click)="downloadCSV()">
+      <i nz-icon nzType="download"></i>
+      {{ 'common.button.csvDownload' | translate }}
+    </button>
+  </div>
+  <div nz-col nzSpan="24" style="padding-top: 16px">
+    <nz-table #basicTable nzShowSizeChanger [nzFrontPagination]="false" [nzData]="listOfDataDisplay" nzBordered="true"
+      [nzTotal]="showTotal" [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzSize="middle"
+      [nzShowTotal]="rangeTemplate" [nzScroll]="scroll" [nzPageSizeOptions]="[30, 50, 100, 500]"
+      (nzPageIndexChange)="search(false)" (nzPageSizeChange)="search(true)">
+      <thead>
+        <tr>
+          <ng-container *ngFor="let col of cols">
+            <th *ngIf="col.width" nz-resizable nzBounds="window" [nzWidth]="col.width" [nzMinWidth]="60"
+              (nzResizeEnd)="onResize($event, col.title)">
+              {{ col.title | translate }}
+              <nz-resize-handle nzDirection="right"></nz-resize-handle>
+            </th>
+            <th *ngIf="!col.width">
+              {{ col.title | translate }}
+            </th>
+          </ng-container>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-template ngFor let-data [ngForOf]="basicTable.data">
+          <tr [style.background]="data.deleted_by ? '#eeeeee' : data.error_count >= maxErrInputTimes ? '#FF0000' : ''">
+            <td>{{ data.keiyakuno }}</td>
+            <td>{{ data.keiyakuymd | dateFormat: 'yyyy-MM-dd'}}</td>
+            <td>{{ data.leasestymd | dateFormat: 'yyyy-MM-dd'}}</td>
+            <td>{{ data.leasekikan }}</td>
+            <td>{{ data.leaseexpireymd | dateFormat: 'yyyy-MM-dd'}}</td>
+            <td>
+              <ng-container *ngIf="data.extentionoption > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.extentionoption | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>{{ data.keiyakunm }}</td>
+            <td>{{ data.biko1 }}</td>
+            <td>{{ data.paymentstymd | dateFormat: 'yyyy-MM-dd'}}</td>
+            <td>
+              <ng-container *ngIf="data.paymentcycle == 1 ">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>毎月</span>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="data.paymentcycle != 1 ">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.paymentcycle | number: '1.0-9' }}ヶ月毎</span>
+                </div>
+              </ng-container>
+            </td>
+            <td>{{ data.paymentday }}日</td>
+            <td>{{ data.paymentcounts }}</td>
+            <td>
+              <ng-container *ngIf="data.residualvalue > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.residualvalue | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>{{ data.rishiritsu }}</td>
+            <td>
+              <ng-container *ngIf="data.initialdirectcosts > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.initialdirectcosts | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.restorationcosts > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.restorationcosts | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.sykshisankeisan == 1 ">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>適用開始時点から計算</span>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="data.sykshisankeisan == 2 ">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>取得時点に遡って計算</span>
+                </div>
+              </ng-container>
+            </td>
+            <td>{{ data.segmentcd }}</td>
+            <td>{{ data.bunruicd }}</td>
+            <td>{{ data.field_viw }}</td>
+            <td>{{ data.field_22c }}</td>
+            <td>{{ data.field_1av }}</td>
+            <td>{{ data.field_206 }}</td>
+            <td>{{ data.field_14l }}</td>
+            <td>{{ data.field_7p3 }}</td>
+            <td>{{ data.field_248 }}</td>
+            <td>{{ data.field_3k7 }}</td>
+            <td>{{ data.field_1vg }}</td>
+            <td>{{ data.field_5fj }}</td>
+            <td>{{ data.field_20h }}</td>
+            <td>{{ data.field_2h1 }}</td>
+            <td>{{ data.field_qi4 }}</td>
+            <td>{{ data.field_1ck }}</td>
+            <td>{{ data.field_u1q }}</td>
+            <td>
+              <ng-container *ngIf="data.hkkjitenzan > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.hkkjitenzan | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.sonnekigaku != 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.sonnekigaku | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>{{ data.year }}</td>
+            <td>{{ data.month }}</td>
+            <td>
+              <ng-container *ngIf="data.paymentleasefee > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.paymentleasefee | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.firstbalance > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.firstbalance | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.repayment > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.repayment | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.balance > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.balance | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.interest > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.interest | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.boka > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.boka | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.syokyaku > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.syokyaku | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="data.endboka > 0  ; else elseTemplate">
+                <div style="padding: 0 2px; text-align: right">
+                  <span>{{ data.endboka | number: '1.0-9' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div style="padding: 0 2px; text-align: right">
+                  <span>0</span>
+                </div>
+              </ng-template>
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </nz-table>
+    <ng-template #rangeTemplate let-range="range">
+      {{ 'common.text.totalTmp' | translate: { total: total, now: range[0], size: range[1] } }}
+    </ng-template>
+  </div>
+</div>
