@@ -255,6 +255,14 @@ export class DefaultLayoutComponent implements OnInit {
                     open: false,
                     selected: false,
                     disabled: false
+                  },
+                  {
+                    level: 2,
+                    path: `/journal/journalsetting`,
+                    title: `menu.journalsetting`,
+                    open: false,
+                    selected: false,
+                    disabled: false
                   }
                 ]
               };

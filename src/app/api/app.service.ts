@@ -47,4 +47,21 @@ export class AppService {
       })
       .toPromise();
   }
+
+  /**
+   * @description: 更新处理月度
+   */
+  modifyAppHandleMonth(id: string, handleMonth: string): Promise<any> {
+    const params = {
+      app_id: id,
+      handlemonth: handleMonth
+    };
+    return this.http
+      .put(`${this.appUrl}/${id}/handleMonth`, params, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
 }

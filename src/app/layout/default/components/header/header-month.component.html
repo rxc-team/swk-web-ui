@@ -1,17 +1,15 @@
 <ng-container *ngIf="handleMonth">
   <nz-button-group style="padding-left: 4px">
-    <button nz-button nzType="primary" style="cursor: auto ;background-color: #1890FF;">
-      {{ 'header.title.firstMonth' | translate }}
+    <button nz-button nzType="primary" style="cursor: auto; background-color: #1890ff">
+      {{ 'header.title.handleMonth' | translate }}
     </button>
-    <nz-date-picker nzMode="month" [(ngModel)]="date" (ngModelChange)="getMonth($event)" [(ngModel)]="encoding">
-    </nz-date-picker>
-    <!--     <button nz-button>
+    <button nz-button>
       {{ handleMonth }}
-    </button> -->
+    </button>
   </nz-button-group>
-  <!-- <nz-button-group style="padding-left: 4px" *ngIf="isSmall">
+  <nz-button-group style="padding-left: 4px" *ngIf="isSmall">
     <button nz-button nzType="primary">
       {{ handleMonth }}
     </button>
-  </nz-button-group> -->
+  </nz-button-group>
 </ng-container>

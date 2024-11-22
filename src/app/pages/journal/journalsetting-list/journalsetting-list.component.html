@@ -1,0 +1,9 @@
+<ng-container *ngIf="form">
+  <div [formGroup]="form">
+    <span>{{ 'header.title.handleMonth' | translate }}</span>
+    <nz-date-picker nzMode="month" [formControlName]="'handleMonth'"></nz-date-picker>
+    <button nz-button nzType="primary" type="button" (click)="submit()" [disabled]="!form.valid">
+      {{ 'common.button.save' | translate }}
+    </button>
+  </div>
+</ng-container>

@@ -394,6 +394,7 @@
     "secondCheckLable": "ログイン認証",
     "shortcut": "ショートカット",
     "subject": "仕訳科目一覧",
+    "journalsetting": "仕訳設定",
     "subtitle": {
       "main": "ユーザメニュー"
     }
@@ -847,7 +848,8 @@
     "questionEditTitle": "お問合せ内容",
     "questionListTitle": "質問一覧",
     "safeSetting": "セキュリティ設定",
-    "subject": "仕訳科目一覧"
+    "subject": "仕訳科目一覧",
+    "journalsetting": "仕訳設定"
   },
   "describe": {
     "keiyakunoDes1": "契約を管理する固有の番号です。",
