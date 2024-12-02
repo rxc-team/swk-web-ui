@@ -1,11 +1,11 @@
 <div style="padding-top: 16px">
   <nz-space>
-    <div *nzSpaceItem>
+    <!-- <div *nzSpaceItem>
       <button nz-button [nzType]="'primary'">
         <i nz-icon nzType="sync"></i>
         {{ 'common.button.refresh' | translate }}
       </button>
-    </div>
+    </div> -->
     <div *nzSpaceItem>
       <nz-button-group>
         <button nz-button (click)="compute()">
@@ -20,12 +20,16 @@
           <i nz-icon nzType="cloud-download" nzTheme="outline"></i>
           {{ 'page.journal.payment' | translate }}
         </button>
+        <button nz-button (click)="compute('pay')">
+          <i nz-icon nzType="download" nzTheme="outline"></i>
+          {{ 'page.journal.download' | translate }}
+        </button>
       </nz-button-group>
     </div>
   </nz-space>
 </div>
-<div style="padding-top: 16px">
-  <!-- <div class="header">
+<!-- <div style="padding-top: 16px"> -->
+<!-- <div class="header">
     <ng-container *ngFor="let col of cols">
       <div class="th" [style.width]="col.width">
         {{ col.title | translate }}
@@ -40,7 +44,7 @@
     <div class="td" [ngClass]="{ no_border: data.no }" [style.width]="cols[4].width">{{ data.amount }}</div>
   </div> -->
 
-  <nz-table
+<!-- <nz-table
     #basicTable
     [nzData]="journals"
     nzBordered="true"
@@ -80,4 +84,4 @@
       </tr>
     </tbody>
   </nz-table>
-</div>
+</div> -->

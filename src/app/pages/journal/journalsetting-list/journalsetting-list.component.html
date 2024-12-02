@@ -1,9 +1,272 @@
-<ng-container *ngIf="form">
-  <div [formGroup]="form">
-    <span>{{ 'header.title.handleMonth' | translate }}</span>
-    <nz-date-picker nzMode="month" [formControlName]="'handleMonth'"></nz-date-picker>
-    <button nz-button nzType="primary" type="button" (click)="submit()" [disabled]="!form.valid">
-      {{ 'common.button.save' | translate }}
-    </button>
-  </div>
-</ng-container>
+<form nz-form [formGroup]="form">
+  <nz-tabset>
+    <nz-tab [nzTitle]="'基本設定'">
+      <div>
+        <span>{{ 'header.title.handleMonth' | translate }}</span>
+        <nz-date-picker nzMode="month" [formControlName]="'handleMonth'"></nz-date-picker>
+        <button nz-button nzType="primary" type="button" (click)="submit()">
+          {{ 'common.button.save' | translate }}
+        </button>
+      </div>
+    </nz-tab>
+    <nz-tab [nzTitle]="'仕訳出力設定'">
+      <!-- レイアウト名 -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ 'レイアウト名' }}
+        </nz-form-label>
+        <nz-form-control>
+          <input nz-input [ngStyle]="{ width: isSmall ? '220px' : '300px' }" formControlName="layoutName" trim="blur" />
+        </nz-form-control>
+        <button nz-button nzType="primary" type="button" (click)="addSetting()">
+          <i nz-icon nzType="save" nzTheme="outline"></i>
+          {{ 'common.button.save' | translate }}
+        </button>
+      </nz-form-item>
+      <!-- 文字コード -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ '文字コード' }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="charEncoding" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
+            <nz-option nzValue="UTF-8" [nzLabel]="'UTF-8'"></nz-option>
+            <nz-option nzValue="Shift-JIS" [nzLabel]="'Shift-JIS'"></nz-option>
+          </nz-select>
+          <ng-template #errorCharEncoding let-control>
+            <ng-container *ngIf="control.hasError('required')">
+              {{ 'common.validator.requiredSelect' | translate }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <!-- ヘッダ行 -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ 'ヘッダ行' }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="headerRow" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
+            <nz-option nzValue="exsit" [nzLabel]="'有'"></nz-option>
+            <nz-option nzValue="unexsit" [nzLabel]="'無'"></nz-option>
+          </nz-select>
+          <ng-template #errorCharEncoding let-control>
+            <ng-container *ngIf="control.hasError('required')">
+              {{ 'common.validator.requiredSelect' | translate }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <!-- 区切り文字 -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ '区切り文字' }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="separatorChar" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
+            <nz-option nzValue="separatorCharComma" [nzLabel]="'カンマ'"></nz-option>
+            <nz-option nzValue="separatorCharTab" [nzLabel]="'タブ'"></nz-option>
+          </nz-select>
+          <ng-template #errorCharEncoding let-control>
+            <ng-container *ngIf="control.hasError('required')">
+              {{ 'common.validator.requiredSelect' | translate }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <!-- 改行 -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ '改行' }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="lineBreaks" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
+            <nz-option nzValue="lf" [nzLabel]="'LF'"></nz-option>
+            <nz-option nzValue="crLf" [nzLabel]="'CR+LF'"></nz-option>
+            <nz-option nzValue="cr" [nzLabel]="'CR'"></nz-option>
+          </nz-select>
+          <ng-template #errorCharEncoding let-control>
+            <ng-container *ngIf="control.hasError('required')">
+              {{ 'common.validator.requiredSelect' | translate }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <!-- 固定長 -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ '固定長' }}
+        </nz-form-label>
+        <nz-form-control>
+          <label nz-checkbox formControlName="fixedLength"></label>
+        </nz-form-control>
+      </nz-form-item>
+      <!-- 項目数 -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ '項目数' }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-input-number
+            formControlName="numberItems"
+            [nzStep]="1"
+            [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
+            trim="blur"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+      <!-- 有効フラグ -->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ '有効フラグ' }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="validFlag" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
+            <nz-option nzValue="valid" [nzLabel]="'有効'"></nz-option>
+            <nz-option nzValue="invalid" [nzLabel]="'無効'"></nz-option>
+          </nz-select>
+          <ng-template #errorCharEncoding let-control>
+            <ng-container *ngIf="control.hasError('required')">
+              {{ 'common.validator.requiredSelect' | translate }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <div class="dashed_border" style="padding: 8px; margin-top: 8px">
+        <h4>
+          {{ 'ダウンロードフィールド設定' }}
+        </h4>
+        <!-- 选择字段下拉菜单 -->
+        <div>
+          <nz-select
+          [(ngModel)]="selectedOption"
+            [ngModelOptions]="{ standalone: true }"
+            nzAllowClear
+            [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
+          >
+            <nz-option nzValue="1" nzLabel="固定值"></nz-option>
+            <nz-option nzValue="2" nzLabel="台账字段"></nz-option>
+          </nz-select>
+          <button nz-button nzType="primary" type="button" (click)="addField()">
+            <i nz-icon nzType="plus" nzTheme="outline"></i>
+          </button>
+        </div>
+        <nz-table
+          [nzData]="[{}]"
+          [nzFrontPagination]="false"
+          [nzPageSize]="100"
+          [nzShowPagination]="false"
+          nzBordered="true"
+          nzSize="default"
+          [nzPageSize]="500"
+          style="height: 300px; overflow-y: auto"
+          cdkScrollable
+        >
+          <thead>
+            <tr>
+              <ng-container *ngFor="let col of colsField">
+                <th *ngIf="col.width" nz-resizable nzBounds="window" [nzWidth]="col.width" [nzMinWidth]="40">
+                  {{ col.title }}
+                  <nz-resize-handle nzDirection="right"></nz-resize-handle>
+                </th>
+                <th *ngIf="!col.width">
+                  {{ col.title }}
+                </th>
+              </ng-container>
+            </tr>
+          </thead>
+          <tbody cdkDropList>
+            <tr *ngFor="let item of selectedFields; let i = index" cdkDrag>
+              <td>{{ i + 1 }}</td>
+              <td>
+                <span style="color: red" *ngIf="item.is_required">*</span>
+                {{ item.field_name | translate }}
+              </td>
+              <td >{{ item.field_type }}</td>
+              <ng-container *ngIf="item.is_fixedvalue">
+                <!-- 如果是固定值，显示输入框 -->
+                <td>
+                  <input nz-input trim="blur"  [ngStyle]="{ width: '220px' }" [ngModelOptions]="{ standalone: true }" [(ngModel)]="item.pit_name" />
+                </td>
+              </ng-container>
+              <ng-container *ngIf="!item.is_fixedvalue">
+                <!-- 如果是台账字段，显示选择框 -->
+                <td>
+                  <nz-select [(ngModel)]="item.field_id" nzAllowClear (ngModelChange)="updateFieldInfo(item)"  [ngStyle]="{ width: '220px' }" nzPlaceHolder="选择台账字段" [ngModelOptions]="{ standalone: true } ">
+                    <nz-option *ngFor="let field of fields" [nzValue]="field.field_id" [nzLabel]="field.field_name | translate" >
+                      {{ field.field_name | translate }}
+                    </nz-option>
+                  </nz-select>
+                </td>
+              </ng-container>
+              <ng-container *ngIf="item.is_fixedvalue">
+                <td>
+                  <input nz-input trim="blur" [disabled]="true" />
+                </td>
+              </ng-container>
+              <ng-container *ngIf="!item.is_fixedvalue">
+                <td>
+                  <input nz-input trim="blur"  [ngModelOptions]="{ standalone: true }" [(ngModel)]="item.download_name"  />
+                </td>
+              </ng-container>
+              <td>
+                <input nz-input trim="blur" [ngModelOptions]="{ standalone: true }" [(ngModel)]="item.fixed_value" />
+              </td>
+              <td>
+                <!-- 删除按钮 -->
+                <button nz-button nzType="default" nzSize="small" (click)="deleteField(i)">
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                  {{ '删除' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+    <nz-tab [nzTitle]="'仕訳一覧'">
+      <div style="padding-top: 16px">
+        <nz-table
+          #basicTable
+          [nzData]="journals"
+          nzBordered="true"
+          nzSize="middle"
+          nzFrontPagination="false"
+          [nzScroll]="{ y: '400px' }"
+          [nzPageSize]="500"
+        >
+          <thead>
+            <tr>
+              <ng-container *ngFor="let col of cols">
+                <th
+                  *ngIf="col.width"
+                  nz-resizable
+                  nzBounds="window"
+                  [nzWidth]="col.width"
+                  [nzMinWidth]="60"
+                  (nzResizeEnd)="onResize($event, col.title)"
+                >
+                  {{ col.title | translate }}
+                  <nz-resize-handle nzDirection="right"></nz-resize-handle>
+                </th>
+                <th *ngIf="!col.width">
+                  {{ col.title | translate }}
+                </th>
+              </ng-container>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let data of basicTable.data" [ngClass]="{ dashboard_bg: data.no }">
+              <td>{{ data.no }}</td>
+              <td [colSpan]="data.no ? 4 : 1">{{ data.name }}</td>
+              <td>{{ data.credit }}</td>
+              <td>{{ data.debt }}</td>
+              <td>{{ data.amount }}</td>
+              <td>{{ data.other }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+  </nz-tabset>
+</form>
