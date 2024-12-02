@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { JournalListComponent } from './journal-list/journal-list.component';
 import { SubjectListComponent } from './subject-list/subject-list.component';
 import { JournalsettingListComponent } from './journalsetting-list/journalsetting-list.component';
+import { JournalConfimComponent } from './journal-confim/journal-confim.component';
 
 const routes: Routes = [
   {
@@ -31,6 +32,15 @@ const routes: Routes = [
     data: {
       title: 'route.journalsetting',
       breadcrumb: 'route.journalsetting'
+    }
+  },
+  {
+    path: 'journalConfim',
+    component: JournalConfimComponent,
+    runGuardsAndResolvers: 'always',
+    data: {
+      title: 'route.journalConfim',
+      breadcrumb: 'route.journalConfim'
     }
   }
 ];

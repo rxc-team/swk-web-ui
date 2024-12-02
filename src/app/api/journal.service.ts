@@ -69,4 +69,46 @@ export class JournalService {
       })
       .toPromise();
   }
+
+  /**
+   * @description: 查找分录作成数据
+   * @return: 返回后台数据
+   */
+  getSakuseiData(): Promise<any> {
+    return this.http
+      .get(`journal/journals/findSakuseiData`, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
+
+  /**
+   * @description: 分录确定
+   * @return: 返回后台数据
+   */
+  journalConfim(): Promise<any> {
+    return this.http
+      .get(`journal/journals/confim`, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
+
+  /**
+   * @description: 添加分录出力设定
+   * @return
+   */
+  addDownloadSetting(param: any): Promise<any> {
+    return this.http
+      .post(`journal/download/setting`, param, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
 }

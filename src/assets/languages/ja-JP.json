@@ -36,6 +36,7 @@
       "groupChange": "グループ変更",
       "history": "変更履歴",
       "import": "インポート",
+      "journalConfim": "仕訳確定",
       "labelPrint": "ラベル印刷",
       "login": "ログイン",
       "mapping": "データインターフェイス",
@@ -78,6 +79,8 @@
         "fileDelTitle": "このファイルを削除してもよろしいですか?",
         "invalidContent": "はいボタンをクリックすると、選択中のデータが無効化されます。",
         "invalidTitle": "この選択中のデータを無効化してもよろしいですか?",
+        "journalConfim": "仕訳未作成の増減があります、仕訳確定してもよろしいですか？",
+        "journalConfimContent": "OKボタンをクリックすると、仕訳を確定します",
         "journalContent": "OKボタンをクリックすると、増減仕訳を生成します",
         "journalTitle": "増減仕訳を生成してもよろしいですか?",
         "matchContent": "現在使用しているアプリが他の場所で変更されたことを検知し、[OK]ボタンを選択すると変更が同期され、[キャンセル]を選択すると現在の状態が保持されます。",
@@ -388,13 +391,14 @@
     "home": "ホーム",
     "jobList": "タスク一覧",
     "journal": "仕訳一覧",
-    "journalSetting": "仕訳管理",
+    "journalConfim": "仕訳確定",
+    "journalManage": "仕訳管理",
+    "journalsetting": "仕訳設定",
     "reportTitle": "レポート",
     "reportCollect": "統合試算結果",
     "secondCheckLable": "ログイン認証",
     "shortcut": "ショートカット",
     "subject": "仕訳科目一覧",
-    "journalsetting": "仕訳設定",
     "subtitle": {
       "main": "ユーザメニュー"
     }
@@ -635,6 +639,7 @@
       "credit": "仕訳科目（貸方）",
       "debt": "仕訳科目（借方）",
       "depreciation": "償却費仕訳",
+      "download": "仕訳送信",
       "incAndDec": "増減仕訳",
       "other": "備考",
       "payment": "支払リース料仕訳",
@@ -841,6 +846,8 @@
     "home": "ホーム",
     "jobList": "タスク一覧",
     "journal": "仕訳一覧",
+    "journalConfim": "仕訳確定",
+    "journalsetting": "仕訳設定",
     "login": "ログイン",
     "notice": "通知リスト",
     "passwordReset": "新しいパスワードを設定する",
@@ -848,8 +855,7 @@
     "questionEditTitle": "お問合せ内容",
     "questionListTitle": "質問一覧",
     "safeSetting": "セキュリティ設定",
-    "subject": "仕訳科目一覧",
-    "journalsetting": "仕訳設定"
+    "subject": "仕訳科目一覧"
   },
   "describe": {
     "keiyakunoDes1": "契約を管理する固有の番号です。",

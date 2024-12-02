@@ -234,7 +234,7 @@ export class DefaultLayoutComponent implements OnInit {
               const journalMenu = {
                 level: 1,
                 path: '/journal',
-                title: 'menu.journalSetting',
+                title: 'menu.journalManage',
                 icon: 'account-book',
                 open: false,
                 selected: false,
@@ -260,6 +260,14 @@ export class DefaultLayoutComponent implements OnInit {
                     level: 2,
                     path: `/journal/journalsetting`,
                     title: `menu.journalsetting`,
+                    open: false,
+                    selected: false,
+                    disabled: false
+                  },
+                  {
+                    level: 2,
+                    path: `/journal/journalConfim`,
+                    title: `menu.journalConfim`,
                     open: false,
                     selected: false,
                     disabled: false
