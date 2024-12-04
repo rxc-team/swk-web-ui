@@ -152,6 +152,22 @@ export class JournalsettingListComponent implements OnInit {
 
       this.fields = _.sortBy(this.fields, 'display_order');
     });
+
+    this.js.findDownloadSetting(currentApp).then((data: any[]) => {
+      if (data) {
+        const rules = [];
+         this.form.controls.layoutName.setValue(data["layout_name"]);
+        this.form.controls.charEncoding.setValue(data["char_encoding"]);
+        this.form.controls.headerRow.setValue(data["header_row"]);
+        this.form.controls.separatorChar.setValue(data["separator_char"]);
+        this.form.controls.lineBreaks.setValue(data["line_breaks"]);
+        this.form.controls.fixedLength.setValue(data["fixed_length"]);
+        this.form.controls.numberItems.setValue(data["number_items"]);
+        this.form.controls.validFlag.setValue(data["valid_flag"]);
+        rules.push(...data["field_rule"]);
+        this.selectedFields=rules 
+      }
+    });
   }
 
   submit() {
@@ -206,7 +222,6 @@ export class JournalsettingListComponent implements OnInit {
       datastore_Id: this.datastore_Id,
       field_rule: this.selectedFields
     };
-    console.log(params);
     this.js.addDownloadSetting(params).then(() => {
       this.message.success(this.i18n.translateLang('common.message.success.S_001'));
     });
