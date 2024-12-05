@@ -1,19 +1,29 @@
 <form nz-form [formGroup]="form">
   <nz-tabset>
-    <nz-tab [nzTitle]="'基本設定'">
+    <nz-tab [nzTitle]="'header.title.monthSetting' | translate">
       <div>
-        <span>{{ 'header.title.handleMonth' | translate }}</span>
+        <nz-form-label>{{ 'header.title.handleMonth' | translate }}</nz-form-label>
         <nz-date-picker nzMode="month" [formControlName]="'handleMonth'"></nz-date-picker>
-        <button nz-button nzType="primary" type="button" (click)="submit()">
-          {{ 'common.button.save' | translate }}
-        </button>
       </div>
+      <div style="margin-top: 15px">
+        <nz-form-item style="width: 100%">
+          <nz-form-label>
+            {{ 'common.text.swkControl' | translate }}
+          </nz-form-label>
+          <nz-form-control style="width: 100%">
+            <nz-switch [(ngModel)]="swkControl" [ngModelOptions]="{ standalone: true }"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <button nz-button nzType="primary" type="button" (click)="submit()">
+        {{ 'common.button.save' | translate }}
+      </button>
     </nz-tab>
-    <nz-tab [nzTitle]="'仕訳出力設定'">
+    <nz-tab [nzTitle]="'header.title.swkDownload' | translate">
       <!-- レイアウト名 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ 'レイアウト名' }}
+          {{ 'common.text.swkName' | translate }}
         </nz-form-label>
         <nz-form-control>
           <input nz-input [ngStyle]="{ width: isSmall ? '220px' : '300px' }" formControlName="layoutName" trim="blur" />
@@ -26,7 +36,7 @@
       <!-- 文字コード -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ '文字コード' }}
+          {{ 'common.text.encoding' | translate }}
         </nz-form-label>
         <nz-form-control>
           <nz-select formControlName="charEncoding" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
@@ -43,7 +53,7 @@
       <!-- ヘッダ行 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ 'ヘッダ行' }}
+          {{ 'common.text.headerRow' | translate }}
         </nz-form-label>
         <nz-form-control>
           <nz-select formControlName="headerRow" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
@@ -60,7 +70,7 @@
       <!-- 区切り文字 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ '区切り文字' }}
+          {{ 'common.text.delimiter' | translate }}
         </nz-form-label>
         <nz-form-control>
           <nz-select formControlName="separatorChar" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
@@ -77,7 +87,7 @@
       <!-- 改行 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ '改行' }}
+          {{ 'common.text.lineBreaks' | translate }}
         </nz-form-label>
         <nz-form-control>
           <nz-select formControlName="lineBreaks" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
@@ -95,7 +105,7 @@
       <!-- 固定長 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ '固定長' }}
+          {{ 'common.text.fixedLength' | translate }}
         </nz-form-label>
         <nz-form-control>
           <label nz-checkbox formControlName="fixedLength"></label>
@@ -104,7 +114,7 @@
       <!-- 項目数 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ '項目数' }}
+          {{ 'common.text.itemsNumber' | translate }}
         </nz-form-label>
         <nz-form-control>
           <nz-input-number
@@ -118,7 +128,7 @@
       <!-- 有効フラグ -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
-          {{ '有効フラグ' }}
+          {{ 'common.text.validFlag' | translate }}
         </nz-form-label>
         <nz-form-control>
           <nz-select formControlName="validFlag" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
@@ -134,12 +144,12 @@
       </nz-form-item>
       <div class="dashed_border" style="padding: 8px; margin-top: 8px">
         <h4>
-          {{ 'ダウンロードフィールド設定' }}
+          {{ 'header.title.downloadFieldSettings' | translate }}
         </h4>
         <!-- 选择字段下拉菜单 -->
         <div>
           <nz-select
-          [(ngModel)]="selectedOption"
+            [(ngModel)]="selectedOption"
             [ngModelOptions]="{ standalone: true }"
             nzAllowClear
             [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
@@ -182,18 +192,35 @@
                 <span style="color: red" *ngIf="item.is_required">*</span>
                 {{ item.field_name | translate }}
               </td>
-              <td >{{ item.field_type }}</td>
+              <td>{{ item.field_type }}</td>
               <ng-container *ngIf="item.is_fixedvalue">
                 <!-- 如果是固定值，显示输入框 -->
                 <td>
-                  <input nz-input trim="blur"  [ngStyle]="{ width: '220px' }" [ngModelOptions]="{ standalone: true }" [(ngModel)]="item.pit_name" />
+                  <input
+                    nz-input
+                    trim="blur"
+                    [ngStyle]="{ width: '220px' }"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="item.pit_name"
+                  />
                 </td>
               </ng-container>
               <ng-container *ngIf="!item.is_fixedvalue">
                 <!-- 如果是台账字段，显示选择框 -->
                 <td>
-                  <nz-select [(ngModel)]="item.field_id" nzAllowClear (ngModelChange)="updateFieldInfo(item)"  [ngStyle]="{ width: '220px' }" nzPlaceHolder="选择台账字段" [ngModelOptions]="{ standalone: true } ">
-                    <nz-option *ngFor="let field of fields" [nzValue]="field.field_id" [nzLabel]="field.field_name | translate" >
+                  <nz-select
+                    [(ngModel)]="item.field_id"
+                    nzAllowClear
+                    (ngModelChange)="updateFieldInfo(item)"
+                    [ngStyle]="{ width: '220px' }"
+                    nzPlaceHolder="选择台账字段"
+                    [ngModelOptions]="{ standalone: true }"
+                  >
+                    <nz-option
+                      *ngFor="let field of fields"
+                      [nzValue]="field.field_id"
+                      [nzLabel]="field.field_name | translate"
+                    >
                       {{ field.field_name | translate }}
                     </nz-option>
                   </nz-select>
@@ -206,7 +233,12 @@
               </ng-container>
               <ng-container *ngIf="!item.is_fixedvalue">
                 <td>
-                  <input nz-input trim="blur"  [ngModelOptions]="{ standalone: true }" [(ngModel)]="item.download_name"  />
+                  <input
+                    nz-input
+                    trim="blur"
+                    [ngModelOptions]="{ standalone: true }"
+                    [(ngModel)]="item.download_name"
+                  />
                 </td>
               </ng-container>
               <td>
@@ -216,7 +248,7 @@
                 <!-- 删除按钮 -->
                 <button nz-button nzType="default" nzSize="small" (click)="deleteField(i)">
                   <i nz-icon nzType="delete" nzTheme="outline"></i>
-                  {{ '删除' }}
+                  {{ 'common.button.delete' | translate }}
                 </button>
               </td>
             </tr>
@@ -224,7 +256,7 @@
         </nz-table>
       </div>
     </nz-tab>
-    <nz-tab [nzTitle]="'仕訳一覧'">
+    <nz-tab [nzTitle]="'header.title.swkList' | translate">
       <div style="padding-top: 16px">
         <nz-table
           #basicTable

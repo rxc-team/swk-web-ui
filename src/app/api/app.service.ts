@@ -49,15 +49,16 @@ export class AppService {
   }
 
   /**
-   * @description: 更新处理月度
+   * @description: 更新月次设定
    */
-  modifyAppHandleMonth(id: string, handleMonth: string): Promise<any> {
+  modifySwkSetting(id: string, handleMonth: string, swkControl: boolean): Promise<any> {
     const params = {
       app_id: id,
-      handlemonth: handleMonth
+      handleMonth: handleMonth,
+      swk_control: swkControl
     };
     return this.http
-      .put(`${this.appUrl}/${id}/handleMonth`, params, {
+      .put(`${this.appUrl}/${id}/swkSetting`, params, {
         headers: {
           token: 'true'
         }

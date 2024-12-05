@@ -104,6 +104,7 @@ export class JournalsettingListComponent implements OnInit {
   // 当前选择的字段
   selectedField: any = null;
   confirmModal: NzModalRef;
+  swkControl = false;
 
   ngOnInit(): void {
     this.init();
@@ -125,9 +126,11 @@ export class JournalsettingListComponent implements OnInit {
     // 获取初始的年月
     await this.appService.getAppByID(currentApp, db).then(res => {
       if (res && res.configs.syori_ym) {
+        this.swkControl = res.swk_control;
         this.handleMonth = format(new Date(res.configs.syori_ym), 'yyyy-MM');
         this.form.patchValue({ handleMonth: this.handleMonth });
       } else {
+        this.swkControl = res.swk_control;
         this.handleMonth = '';
         this.form.patchValue({ handleMonth: '' });
       }
@@ -156,16 +159,16 @@ export class JournalsettingListComponent implements OnInit {
     this.js.findDownloadSetting(currentApp).then((data: any[]) => {
       if (data) {
         const rules = [];
-         this.form.controls.layoutName.setValue(data["layout_name"]);
-        this.form.controls.charEncoding.setValue(data["char_encoding"]);
-        this.form.controls.headerRow.setValue(data["header_row"]);
-        this.form.controls.separatorChar.setValue(data["separator_char"]);
-        this.form.controls.lineBreaks.setValue(data["line_breaks"]);
-        this.form.controls.fixedLength.setValue(data["fixed_length"]);
-        this.form.controls.numberItems.setValue(data["number_items"]);
-        this.form.controls.validFlag.setValue(data["valid_flag"]);
-        rules.push(...data["field_rule"]);
-        this.selectedFields=rules 
+        this.form.controls.layoutName.setValue(data['layout_name']);
+        this.form.controls.charEncoding.setValue(data['char_encoding']);
+        this.form.controls.headerRow.setValue(data['header_row']);
+        this.form.controls.separatorChar.setValue(data['separator_char']);
+        this.form.controls.lineBreaks.setValue(data['line_breaks']);
+        this.form.controls.fixedLength.setValue(data['fixed_length']);
+        this.form.controls.numberItems.setValue(data['number_items']);
+        this.form.controls.validFlag.setValue(data['valid_flag']);
+        rules.push(...data['field_rule']);
+        this.selectedFields = rules;
       }
     });
   }
@@ -173,7 +176,7 @@ export class JournalsettingListComponent implements OnInit {
   submit() {
     this.appId = this.tokenService.getUserApp();
     const date = format(new Date(this.form.value.handleMonth), 'yyyy-MM');
-    this.appService.modifyAppHandleMonth(this.appId, date);
+    this.appService.modifySwkSetting(this.appId, date, this.swkControl);
     this.message.success(this.i18n.translateLang('common.message.success.S_002'));
     this.init();
   }

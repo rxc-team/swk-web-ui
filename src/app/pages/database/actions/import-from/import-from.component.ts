@@ -7,8 +7,8 @@ import { filter } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { DatabaseService, DatastoreService, ValidationService } from '@api';
-import { CommonService, FileUtilService, I18NService } from '@core';
+import { AppService, DatabaseService, DatastoreService, ValidationService } from '@api';
+import { CommonService, FileUtilService, I18NService, TokenStorageService } from '@core';
 
 @Component({
   selector: 'app-import-from',
@@ -26,7 +26,9 @@ export class ImportFromComponent implements OnInit {
     private eventBus: NgEventBus,
     private validation: ValidationService,
     private message: NzMessageService,
-    private ds: DatastoreService
+    private ds: DatastoreService,
+    private appService: AppService,
+    private tokenService: TokenStorageService
   ) {}
   @Input() conditionParam = {
     condition_list: [],
@@ -101,59 +103,68 @@ export class ImportFromComponent implements OnInit {
    * @description: 文件上传
    */
   async handleUpload() {
-    const formData = new FormData();
+    const us = this.tokenService.getUser();
+    const currentApp = us.current_app;
+    const db = us.customer_id;
+    await this.appService.getAppByID(currentApp, db).then(async res => {
+      if (!res.swk_control) {
+        const formData = new FormData();
 
-    let encoding = false;
-    await this.fileUtil.checkEncoding(this.files[0] as any, this.selectMapping.char_encoding).then(result => {
-      encoding = result;
-    });
+        let encoding = false;
+        await this.fileUtil.checkEncoding(this.files[0] as any, this.selectMapping.char_encoding).then(result => {
+          encoding = result;
+        });
 
-    if (!encoding) {
-      this.message.error(this.i18n.translateLang('common.message.error.E_011', { encoding: this.selectMapping.char_encoding }));
-      return;
-    }
-
-    // 设置文件
-    formData.append('file', this.files[0] as any);
-    // 设置参数mappingId
-    formData.append('mapping_id', this.selectMapping.mapping_id);
-
-    // 调用服务上传文件信息
-    const jobId = `job_${format(new Date(), 'yyyyMMddHHmmssSSS')}`;
-    this.files = [];
-    formData.append('empty_change', this.emptyChange);
-    // 设置参数mappingId
-    formData.append('job_id', jobId);
-
-    // 设置访问头
-    const req = new HttpRequest('POST', `/mapping/datastores/${this.datastoreId}/upload`, formData, {
-      headers: new HttpHeaders({
-        token: 'true'
-      }),
-      reportProgress: true,
-      withCredentials: true
-    });
-    // 设置上传loading
-    // 开始文件上传
-    this.http
-      .request(req)
-      .pipe(filter(e => e instanceof HttpResponse))
-      .subscribe(
-        () => {
-          // 上传成功
-          this.visible = false;
-          this.selectMapping = {};
-          this.selectMp = '';
-          this.message.success(this.i18n.translateLang('common.message.success.S_006'));
-        },
-        () => {
-          // 上传失败
-          this.visible = false;
-          this.selectMapping = {};
-          this.selectMp = '';
-          this.message.error(this.i18n.translateLang('common.message.error.E_006'));
+        if (!encoding) {
+          this.message.error(this.i18n.translateLang('common.message.error.E_011', { encoding: this.selectMapping.char_encoding }));
+          return;
         }
-      );
+
+        // 设置文件
+        formData.append('file', this.files[0] as any);
+        // 设置参数mappingId
+        formData.append('mapping_id', this.selectMapping.mapping_id);
+
+        // 调用服务上传文件信息
+        const jobId = `job_${format(new Date(), 'yyyyMMddHHmmssSSS')}`;
+        this.files = [];
+        formData.append('empty_change', this.emptyChange);
+        // 设置参数mappingId
+        formData.append('job_id', jobId);
+
+        // 设置访问头
+        const req = new HttpRequest('POST', `/mapping/datastores/${this.datastoreId}/upload`, formData, {
+          headers: new HttpHeaders({
+            token: 'true'
+          }),
+          reportProgress: true,
+          withCredentials: true
+        });
+        // 设置上传loading
+        // 开始文件上传
+        this.http
+          .request(req)
+          .pipe(filter(e => e instanceof HttpResponse))
+          .subscribe(
+            () => {
+              // 上传成功
+              this.visible = false;
+              this.selectMapping = {};
+              this.selectMp = '';
+              this.message.success(this.i18n.translateLang('common.message.success.S_006'));
+            },
+            () => {
+              // 上传失败
+              this.visible = false;
+              this.selectMapping = {};
+              this.selectMp = '';
+              this.message.error(this.i18n.translateLang('common.message.error.E_006'));
+            }
+          );
+      } else {
+        this.message.error(this.i18n.translateLang('common.message.error.E_022'));
+      }
+    });
   }
 
   /**
