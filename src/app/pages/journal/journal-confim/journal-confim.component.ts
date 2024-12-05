@@ -36,8 +36,8 @@ export class JournalConfimComponent implements OnInit {
               nzTitle: `${this.i18n.translateLang('common.message.confirm.journalConfim')}`,
               nzContent: `${this.i18n.translateLang('common.message.confirm.journalConfimContent')}`,
               nzOnOk: async () => {
-                await this.message.info(this.i18n.translateLang('common.message.info.I_003'));
-                this.js.journalConfim();
+                this.message.info(this.i18n.translateLang('common.message.info.I_003'));
+                await this.js.journalConfim();
               }
             });
           } else {
