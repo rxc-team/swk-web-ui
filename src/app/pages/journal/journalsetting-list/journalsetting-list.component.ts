@@ -8,6 +8,7 @@ import { I18NService, TokenStorageService } from '@core';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import _ from 'lodash';
 import { forkJoin } from 'rxjs';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-journal-list',
@@ -68,28 +69,20 @@ export class JournalsettingListComponent implements OnInit {
       width: '20px'
     },
     {
-      title: 'PITフィールド名',
-      width: '50px'
-    },
-    {
-      title: 'フィールドタイプ',
-      width: '50px'
-    },
-    {
-      title: 'フィールド名',
-      width: '50px'
-    },
-    {
       title: 'ダウンロードフィールド名',
       width: '50px'
     },
     {
-      title: '固定値',
+      title: '設定方法',
+      width: '50px'
+    },
+    {
+      title: '編集内容',
       width: '50px'
     },
     {
       title: '',
-      width: '50px'
+      width: '20px'
     }
   ];
 
@@ -213,6 +206,11 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   addSetting() {
+    this.selectedFields.forEach((item, index) => {
+      if (!item.download_name) {
+        this.message.error(`ダウンロードフィールド名を空にすることはできません`);
+      }
+    });
     const params = {
       layout_name: this.form.controls.layoutName.value,
       char_encoding: this.form.controls.charEncoding.value,
@@ -231,17 +229,10 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   addField() {
-    if (this.selectedOption === '1') {
-      this.selectedFields = [
-        ...this.selectedFields,
-        { field_id: '', field_type: 'text', download_name: '', fixed_value: '', is_fixedvalue: true, pit_name: '', field_name: '' }
-      ];
-    } else if (this.selectedOption === '2') {
-      this.selectedFields = [
-        ...this.selectedFields,
-        { field_id: '', field_type: '', download_name: '', fixed_value: '', is_fixedvalue: false, pit_name: '', field_name: '' }
-      ];
-    }
+    this.selectedFields = [
+      ...this.selectedFields,
+      { field_id: '', setting_method: '2', download_name: '', edit_content: '', field_name: '' }
+    ];
   }
 
   // 删除字段
@@ -253,7 +244,15 @@ export class JournalsettingListComponent implements OnInit {
     const selectedField = this.fields.find(field => field.field_id === item.field_id);
     if (selectedField) {
       item.field_name = selectedField.field_name;
-      item.field_type = selectedField.field_type;
+      item.download_name = this.i18n.translateLang(selectedField.field_name);
+    }
+  }
+
+  onDrop(event: CdkDragDrop<any[]>): void {
+    const previousIndex = this.selectedFields.findIndex(item => item === event.item.data);
+    const currentIndex = event.currentIndex;
+    if (previousIndex !== currentIndex) {
+      moveItemInArray(this.selectedFields, previousIndex, currentIndex);
     }
   }
 }

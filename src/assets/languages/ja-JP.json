@@ -211,6 +211,7 @@
       "encoding": "文字コード",
       "expireLink": "以下の契約番号をクリックすると、詳細画面にジャンプします。",
       "fixedLength": "固定長",
+      "fieldAdd": "フィールドの追加",
       "groupBelong": "所属グループ",
       "headerRow": "ヘッダ行",
       "imagecheck": "画像",

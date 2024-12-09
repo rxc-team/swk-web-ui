@@ -223,6 +223,14 @@ export class JobListComponent implements OnInit {
       return;
     }
 
+    if (type === 'swk-download') {
+      const fielName = this.getFileName('仕訳台帳', '.csv');
+      link.download = fielName;
+      document.body.appendChild(link);
+      link.click();
+      return;
+    }
+
     /* get the file name */
     let csvFielName = '';
     if (fileName && fileName !== '-') {

@@ -112,20 +112,34 @@ export class JournalService {
       .toPromise();
   }
 
-    /**
+  /**
    * @description: 获取分录出力设定
    * @return: 返回后台数据
    */
-    findDownloadSetting(appId:string): Promise<any> {
-      return this.http
-        .get(`journal/download/find`,{
-          params: {
-            appId: appId
-          },
-          headers: {
-            token: 'true'
-          }
-        })
-        .toPromise();
-    }
+  findDownloadSetting(appId: string): Promise<any> {
+    return this.http
+      .get(`journal/download/find`, {
+        params: {
+          appId: appId
+        },
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
+
+  /**
+   * @description: 分录下载
+   * @return
+   */
+  swkDownload(): Promise<any> {
+    return this.http
+      .get(`journal/download`, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
 }

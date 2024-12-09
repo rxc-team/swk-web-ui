@@ -103,16 +103,16 @@
         </nz-form-control>
       </nz-form-item>
       <!-- 固定長 -->
-      <nz-form-item>
+      <!-- <nz-form-item>
         <nz-form-label [nzSpan]="2">
           {{ 'common.text.fixedLength' | translate }}
         </nz-form-label>
         <nz-form-control>
           <label nz-checkbox formControlName="fixedLength"></label>
         </nz-form-control>
-      </nz-form-item>
+      </nz-form-item> -->
       <!-- 項目数 -->
-      <nz-form-item>
+      <!-- <nz-form-item>
         <nz-form-label [nzSpan]="2">
           {{ 'common.text.itemsNumber' | translate }}
         </nz-form-label>
@@ -124,9 +124,9 @@
             trim="blur"
           ></nz-input-number>
         </nz-form-control>
-      </nz-form-item>
+      </nz-form-item> -->
       <!-- 有効フラグ -->
-      <nz-form-item>
+      <!-- <nz-form-item>
         <nz-form-label [nzSpan]="2">
           {{ 'common.text.validFlag' | translate }}
         </nz-form-label>
@@ -141,23 +141,15 @@
             </ng-container>
           </ng-template>
         </nz-form-control>
-      </nz-form-item>
+      </nz-form-item> -->
       <div class="dashed_border" style="padding: 8px; margin-top: 8px">
         <h4>
           {{ 'header.title.downloadFieldSettings' | translate }}
         </h4>
         <!-- 选择字段下拉菜单 -->
         <div>
-          <nz-select
-            [(ngModel)]="selectedOption"
-            [ngModelOptions]="{ standalone: true }"
-            nzAllowClear
-            [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
-          >
-            <nz-option nzValue="1" nzLabel="固定值"></nz-option>
-            <nz-option nzValue="2" nzLabel="台账字段"></nz-option>
-          </nz-select>
           <button nz-button nzType="primary" type="button" (click)="addField()">
+            <span>{{ 'common.text.fieldAdd' | translate }}</span>
             <i nz-icon nzType="plus" nzTheme="outline"></i>
           </button>
         </div>
@@ -185,33 +177,47 @@
               </ng-container>
             </tr>
           </thead>
-          <tbody cdkDropList>
+          <tbody cdkDropList (cdkDropListDropped)="onDrop($event)">
             <tr *ngFor="let item of selectedFields; let i = index" cdkDrag>
               <td>{{ i + 1 }}</td>
               <td>
-                <span style="color: red" *ngIf="item.is_required">*</span>
-                {{ item.field_name | translate }}
+                <span style="color: red">*</span>
+                <input
+                  nz-input
+                  [ngModelOptions]="{ standalone: true }"
+                  [(ngModel)]="item.download_name"
+                  trim="blur"
+                  [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
+                />
               </td>
-              <td>{{ item.field_type }}</td>
-              <ng-container *ngIf="item.is_fixedvalue">
-                <!-- 如果是固定值，显示输入框 -->
-                <td>
+              <td>
+                <nz-select
+                  [(ngModel)]="item.setting_method"
+                  [ngModelOptions]="{ standalone: true }"
+                  nzAllowClear
+                  [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
+                >
+                  <nz-option nzValue="1" nzLabel="固定值"></nz-option>
+                  <nz-option nzValue="2" nzLabel="仕訳台帳"></nz-option>
+                </nz-select>
+              </td>
+              <!-- 根据选择的 setting_method 渲染不同内容 -->
+              <td>
+                <ng-container *ngIf="item.setting_method === '1'">
                   <input
                     nz-input
                     trim="blur"
                     [ngStyle]="{ width: '220px' }"
                     [ngModelOptions]="{ standalone: true }"
-                    [(ngModel)]="item.pit_name"
+                    [(ngModel)]="item.edit_content"
+                    placeholder="请输入固定值"
                   />
-                </td>
-              </ng-container>
-              <ng-container *ngIf="!item.is_fixedvalue">
-                <!-- 如果是台账字段，显示选择框 -->
-                <td>
+                </ng-container>
+                <ng-container *ngIf="item.setting_method === '2'">
                   <nz-select
                     [(ngModel)]="item.field_id"
-                    nzAllowClear
                     (ngModelChange)="updateFieldInfo(item)"
+                    nzAllowClear
                     [ngStyle]="{ width: '220px' }"
                     nzPlaceHolder="选择台账字段"
                     [ngModelOptions]="{ standalone: true }"
@@ -224,25 +230,7 @@
                       {{ field.field_name | translate }}
                     </nz-option>
                   </nz-select>
-                </td>
-              </ng-container>
-              <ng-container *ngIf="item.is_fixedvalue">
-                <td>
-                  <input nz-input trim="blur" [disabled]="true" />
-                </td>
-              </ng-container>
-              <ng-container *ngIf="!item.is_fixedvalue">
-                <td>
-                  <input
-                    nz-input
-                    trim="blur"
-                    [ngModelOptions]="{ standalone: true }"
-                    [(ngModel)]="item.download_name"
-                  />
-                </td>
-              </ng-container>
-              <td>
-                <input nz-input trim="blur" [ngModelOptions]="{ standalone: true }" [(ngModel)]="item.fixed_value" />
+                </ng-container>
               </td>
               <td>
                 <!-- 删除按钮 -->

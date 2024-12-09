@@ -126,4 +126,12 @@ export class JournalListComponent implements OnInit {
   onResize({ width }: NzResizeEvent, col: string): void {
     this.cols = this.cols.map(e => (e.title === col ? { ...e, width: `${width}px` } : e));
   }
+
+  /**
+   * @description: 分录下载
+   */
+  download() {
+    this.js.swkDownload();
+    this.message.info(this.i18n.translateLang('common.message.info.I_002'));
+  }
 }
