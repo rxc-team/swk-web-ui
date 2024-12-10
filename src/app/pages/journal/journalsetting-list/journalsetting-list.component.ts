@@ -29,10 +29,10 @@ export class JournalsettingListComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       layoutName: ['', [Validators.required]],
-      charEncoding: ['', [Validators.required]],
-      headerRow: ['', [Validators.required]],
-      separatorChar: ['', [Validators.required]],
-      lineBreaks: ['', [Validators.required]],
+      charEncoding: ['UTF-8', [Validators.required]],
+      headerRow: ['exsit', [Validators.required]],
+      separatorChar: ['separatorCharComma', [Validators.required]],
+      lineBreaks: ['crLf', [Validators.required]],
       fixedLength: [false],
       numberItems: [0, [Validators.required]],
       validFlag: ['', [Validators.required]],
@@ -150,7 +150,7 @@ export class JournalsettingListComponent implements OnInit {
     });
 
     this.js.findDownloadSetting(currentApp).then((data: any[]) => {
-      if (data) {
+      if (data['app_id']!="") {
         const rules = [];
         this.form.controls.layoutName.setValue(data['layout_name']);
         this.form.controls.charEncoding.setValue(data['char_encoding']);
