@@ -32,7 +32,7 @@ export class JournalsettingListComponent implements OnInit {
       charEncoding: ['UTF-8', [Validators.required]],
       headerRow: ['exsit', [Validators.required]],
       separatorChar: ['separatorCharComma', [Validators.required]],
-      lineBreaks: ['crLf', [Validators.required]],
+      lineBreaks: ['lf', [Validators.required]],
       fixedLength: [false],
       numberItems: [0, [Validators.required]],
       validFlag: ['', [Validators.required]],
@@ -73,11 +73,19 @@ export class JournalsettingListComponent implements OnInit {
       width: '50px'
     },
     {
+      title: 'フィールドタイプ',
+      width: '50px'
+    },
+    {
       title: '設定方法',
       width: '50px'
     },
     {
       title: '編集内容',
+      width: '50px'
+    },
+    {
+      title: '日付形式',
       width: '50px'
     },
     {
@@ -90,10 +98,12 @@ export class JournalsettingListComponent implements OnInit {
   appId: string;
   form: FormGroup;
   journals = [];
-  fields: any[] = [];
+  swkFields: any[] = [];
+  rkFields: any[] = [];
   selectedFields: any[] = [];
   selectedOption = '';
-  datastore_Id = '';
+  swk_datastore_Id = '';
+  rk_datastore_Id = '';
   // 当前选择的字段
   selectedField: any = null;
   confirmModal: NzModalRef;
@@ -109,8 +119,16 @@ export class JournalsettingListComponent implements OnInit {
       .toPromise()
       .then((data: any[]) => {
         const dsData = data[0];
-        this.datastore_Id = dsData.datastore_id;
+        this.swk_datastore_Id = dsData.datastore_id;
       });
+
+      const job1 = [this.ds.getDatastoreByKey('zougenrireki')];
+      await forkJoin(job1)
+        .toPromise()
+        .then((data: any[]) => {
+          const dsData = data[0];
+          this.rk_datastore_Id = dsData.datastore_id;
+        });
 
     const us = this.tokenService.getUser();
     const currentApp = us.current_app;
@@ -138,15 +156,26 @@ export class JournalsettingListComponent implements OnInit {
       }
     });
 
-    await this.fs.getFields(this.datastore_Id).then((data: any[]) => {
+    await this.fs.getFields(this.swk_datastore_Id).then((data: any[]) => {
       if (data) {
-        this.fields = data.filter(f => f.field_type !== 'file');
-        this.fields = this.fields.filter(f => !f.as_title);
+        this.swkFields = data.filter(f => f.field_type !== 'file');
+        this.swkFields = this.swkFields.filter(f => !f.as_title);
       } else {
-        this.fields = [];
+        this.swkFields = [];
       }
 
-      this.fields = _.sortBy(this.fields, 'display_order');
+      this.swkFields = _.sortBy(this.swkFields, 'display_order');
+    });
+
+    await this.fs.getFields(this.rk_datastore_Id).then((data: any[]) => {
+      if (data) {
+        this.rkFields = data.filter(f => f.field_type !== 'file');
+        this.rkFields = this.rkFields.filter(f => !f.as_title);
+      } else {
+        this.rkFields = [];
+      }
+
+      this.rkFields = _.sortBy(this.rkFields, 'display_order');
     });
 
     this.js.findDownloadSetting(currentApp).then((data: any[]) => {
@@ -220,9 +249,9 @@ export class JournalsettingListComponent implements OnInit {
       fixed_length: this.form.controls.fixedLength.value,
       number_items: this.form.controls.numberItems.value,
       valid_flag: this.form.controls.validFlag.value,
-      datastore_Id: this.datastore_Id,
       field_rule: this.selectedFields
     };
+
     this.js.addDownloadSetting(params).then(() => {
       this.message.success(this.i18n.translateLang('common.message.success.S_001'));
     });
@@ -231,7 +260,7 @@ export class JournalsettingListComponent implements OnInit {
   addField() {
     this.selectedFields = [
       ...this.selectedFields,
-      { field_id: '', setting_method: '2', download_name: '', edit_content: '', field_name: '' }
+      { field_id: '', setting_method: '2', download_name: '', edit_content: '', field_name: '',datastore_id:'',field_type:'',format:'' }
     ];
   }
 
@@ -241,10 +270,22 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   updateFieldInfo(item: any) {
-    const selectedField = this.fields.find(field => field.field_id === item.field_id);
-    if (selectedField) {
-      item.field_name = selectedField.field_name;
-      item.download_name = this.i18n.translateLang(selectedField.field_name);
+    if (item.setting_method=="2") {
+      const selectedField = this.swkFields.find(field => field.field_id === item.field_id);
+      if (selectedField) {
+        item.field_name = selectedField.field_name;
+        item.field_type = selectedField.field_type;
+        item.download_name = this.i18n.translateLang(selectedField.field_name);
+        item.datastore_id=this.swk_datastore_Id
+      }
+    }else if (item.setting_method=="3"){
+      const selectedField = this.rkFields.find(field => field.field_id === item.field_id);
+      if (selectedField) {
+        item.field_name = selectedField.field_name;
+        item.field_type = selectedField.field_type;
+        item.download_name = this.i18n.translateLang(selectedField.field_name);
+        item.datastore_id=this.rk_datastore_Id
+      }
     }
   }
 

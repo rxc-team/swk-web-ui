@@ -190,6 +190,7 @@
                   [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
                 />
               </td>
+              <td [ngStyle]="{ width: '100px' }">{{ item.field_type }}</td>
               <td>
                 <nz-select
                   [(ngModel)]="item.setting_method"
@@ -199,6 +200,7 @@
                 >
                   <nz-option nzValue="1" nzLabel="固定值"></nz-option>
                   <nz-option nzValue="2" nzLabel="仕訳台帳"></nz-option>
+                  <nz-option nzValue="3" nzLabel="増減履歴台帳"></nz-option>
                 </nz-select>
               </td>
               <!-- 根据选择的 setting_method 渲染不同内容 -->
@@ -223,7 +225,25 @@
                     [ngModelOptions]="{ standalone: true }"
                   >
                     <nz-option
-                      *ngFor="let field of fields"
+                      *ngFor="let field of swkFields"
+                      [nzValue]="field.field_id"
+                      [nzLabel]="field.field_name | translate"
+                    >
+                      {{ field.field_name | translate }}
+                    </nz-option>
+                  </nz-select>
+                </ng-container>
+                <ng-container *ngIf="item.setting_method === '3'">
+                  <nz-select
+                    [(ngModel)]="item.field_id"
+                    (ngModelChange)="updateFieldInfo(item)"
+                    nzAllowClear
+                    [ngStyle]="{ width: '220px' }"
+                    nzPlaceHolder="选择台账字段"
+                    [ngModelOptions]="{ standalone: true }"
+                  >
+                    <nz-option
+                      *ngFor="let field of rkFields"
                       [nzValue]="field.field_id"
                       [nzLabel]="field.field_name | translate"
                     >
@@ -232,6 +252,24 @@
                   </nz-select>
                 </ng-container>
               </td>
+              <!-- 日期形式 -->
+              <td>
+                <nz-select
+                  style="width: 100%"
+                  [(ngModel)]="item.format"
+                  [ngModelOptions]="{ standalone: true }"
+                  nzAllowClear
+                  [nzDisabled]="item.field_type !== 'date'"
+                  nzPlaceHolder="YYYY-MM-DD"
+                >
+                  <nz-option nzValue="2006/01/02" nzLabel="YYYY/MM/DD"></nz-option>
+                  <nz-option nzValue="20060102" nzLabel="YYYYMMDD"></nz-option>
+                  <nz-option nzValue="2006/1/2" nzLabel="YYYY/M/D"></nz-option>
+                  <nz-option nzValue="2006-01-02" nzLabel="YYYY-MM-DD"></nz-option>
+                  <nz-option nzValue="2006-1-2" nzLabel="YYYY-M-D"></nz-option>
+                  <nz-option nzValue="01/02/2006" nzLabel="MM/DD/YYYY"></nz-option>
+                </nz-select>
+              </td>
               <td>
                 <!-- 删除按钮 -->
                 <button nz-button nzType="default" nzSize="small" (click)="deleteField(i)">
@@ -239,6 +277,12 @@
                   {{ 'common.button.delete' | translate }}
                 </button>
               </td>
+              <input
+                nz-input
+                [(ngModel)]="item.datastore_id"
+                [ngModelOptions]="{ standalone: true }"
+                [ngStyle]="{ display: 'none' }"
+              />
             </tr>
           </tbody>
         </nz-table>
