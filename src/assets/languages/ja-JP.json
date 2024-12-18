@@ -79,7 +79,7 @@
         "fileDelTitle": "このファイルを削除してもよろしいですか?",
         "invalidContent": "はいボタンをクリックすると、選択中のデータが無効化されます。",
         "invalidTitle": "この選択中のデータを無効化してもよろしいですか?",
-        "journalConfim": "仕訳未作成の増減があります、仕訳確定してもよろしいですか？",
+        "journalConfim": "仕訳未作成の増減と償却費があります、仕訳確定してもよろしいですか？",
         "journalConfimContent": "OKボタンをクリックすると、仕訳を確定します",
         "journalContent": "OKボタンをクリックすると、増減仕訳を生成します",
         "journalTitle": "増減仕訳を生成してもよろしいですか?",
@@ -91,8 +91,10 @@
         "printTitle": "印刷確認",
         "repayJournalContent": "OKボタンをクリックすると、償却費仕訳を生成します",
         "repayJournalTitle": "償却費仕訳を生成してもよろしいですか?",
+        "shoukyakuJournalConfim": "仕訳未作成の償却費があります、仕訳確定してもよろしいですか？",
         "templateDelContent": "OKボタンをクリックすると、該当仮登録データが削除されます",
-        "templateDelTitle": "この仮登録データを削除してもよろしいですか?"
+        "templateDelTitle": "この仮登録データを削除してもよろしいですか?",
+        "zougenJournalConfim": "仕訳未作成の増減があります、仕訳確定してもよろしいですか？"
       },
       "error": {
         "E_001": "追加出来ませんでした",

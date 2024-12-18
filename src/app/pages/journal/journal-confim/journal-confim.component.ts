@@ -31,7 +31,25 @@ export class JournalConfimComponent implements OnInit {
     await this.appService.getAppByID(currentApp, db).then(async res => {
       if (!res.swk_control) {
         await this.js.getSakuseiData().then(async (data: any) => {
-          if (data.total == 0) {
+          if (data.rirekiTotal == 0 && data.repaymentTotal != 0) {
+            this.confirmModal = this.modal.confirm({
+              nzTitle: `${this.i18n.translateLang('common.message.confirm.zougenJournalConfim')}`,
+              nzContent: `${this.i18n.translateLang('common.message.confirm.journalConfimContent')}`,
+              nzOnOk: async () => {
+                this.message.info(this.i18n.translateLang('common.message.info.I_003'));
+                await this.js.journalConfim();
+              }
+            });
+          } else if (data.rirekiTotal != 0 && data.repaymentTotal == 0) {
+            this.confirmModal = this.modal.confirm({
+              nzTitle: `${this.i18n.translateLang('common.message.confirm.shoukyakuJournalConfim')}`,
+              nzContent: `${this.i18n.translateLang('common.message.confirm.journalConfimContent')}`,
+              nzOnOk: async () => {
+                this.message.info(this.i18n.translateLang('common.message.info.I_003'));
+                await this.js.journalConfim();
+              }
+            });
+          } else if (data.rirekiTotal == 0 && data.repaymentTotal == 0) {
             this.confirmModal = this.modal.confirm({
               nzTitle: `${this.i18n.translateLang('common.message.confirm.journalConfim')}`,
               nzContent: `${this.i18n.translateLang('common.message.confirm.journalConfimContent')}`,
