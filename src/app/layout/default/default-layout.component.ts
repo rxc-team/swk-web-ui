@@ -242,8 +242,8 @@ export class DefaultLayoutComponent implements OnInit {
                 children: [
                   {
                     level: 2,
-                    path: `/journal/list`,
-                    title: `menu.journal`,
+                    path: `/journal/journalsetting`,
+                    title: `menu.journalsetting`,
                     open: false,
                     selected: false,
                     disabled: false
@@ -258,8 +258,8 @@ export class DefaultLayoutComponent implements OnInit {
                   },
                   {
                     level: 2,
-                    path: `/journal/journalsetting`,
-                    title: `menu.journalsetting`,
+                    path: `/journal/list`,
+                    title: `menu.journal`,
                     open: false,
                     selected: false,
                     disabled: false
@@ -268,6 +268,14 @@ export class DefaultLayoutComponent implements OnInit {
                     level: 2,
                     path: `/journal/journalConfim`,
                     title: `menu.journalConfim`,
+                    open: false,
+                    selected: false,
+                    disabled: false
+                  },
+                  {
+                    level: 2,
+                    path: `/journal/journalSend`,
+                    title: `menu.journalSend`,
                     open: false,
                     selected: false,
                     disabled: false

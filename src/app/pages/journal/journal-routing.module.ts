@@ -5,6 +5,7 @@ import { JournalListComponent } from './journal-list/journal-list.component';
 import { SubjectListComponent } from './subject-list/subject-list.component';
 import { JournalsettingListComponent } from './journalsetting-list/journalsetting-list.component';
 import { JournalConfimComponent } from './journal-confim/journal-confim.component';
+import { JournalSendComponent } from './journal-send/journal-send.component';
 
 const routes: Routes = [
   {
@@ -41,6 +42,15 @@ const routes: Routes = [
     data: {
       title: 'route.journalConfim',
       breadcrumb: 'route.journalConfim'
+    }
+  },
+  {
+    path: 'journalSend',
+    component: JournalSendComponent,
+    runGuardsAndResolvers: 'always',
+    data: {
+      title: 'route.journalSend',
+      breadcrumb: 'route.journalSend'
     }
   }
 ];

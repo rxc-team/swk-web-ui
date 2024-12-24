@@ -51,12 +51,15 @@ export class AppService {
   /**
    * @description: 更新月次设定
    */
-  modifySwkSetting(id: string, handleMonth: string, swkControl: boolean): Promise<any> {
-    const params = {
-      app_id: id,
-      handleMonth: handleMonth,
-      swk_control: swkControl
-    };
+  modifySwkSetting(
+    id: string,
+    params: {
+      app_id: string;
+      handleMonth: string;
+      swk_control: boolean;
+      confim_method: string;
+    }
+  ): Promise<any> {
     return this.http
       .put(`${this.appUrl}/${id}/swkSetting`, params, {
         headers: {
