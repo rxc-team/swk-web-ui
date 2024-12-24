@@ -36,7 +36,8 @@ export class JournalsettingListComponent implements OnInit {
       fixedLength: [false],
       numberItems: [0, [Validators.required]],
       validFlag: ['', [Validators.required]],
-      handleMonth: [this.handleMonth]
+      handleMonth: [this.handleMonth],
+      confimMethod: ['sabun']
     });
   }
 
@@ -108,6 +109,11 @@ export class JournalsettingListComponent implements OnInit {
   selectedField: any = null;
   confirmModal: NzModalRef;
   swkControl = false;
+  // 控制弹窗显示与否
+  isJsonEditorVisible = false;
+  //json内容
+  currentItem: { edit_content: string } = { edit_content: '' };
+  fieldId: '';
 
   ngOnInit(): void {
     this.init();
@@ -122,19 +128,19 @@ export class JournalsettingListComponent implements OnInit {
         this.swk_datastore_Id = dsData.datastore_id;
       });
 
-      const job1 = [this.ds.getDatastoreByKey('zougenrireki')];
-      await forkJoin(job1)
-        .toPromise()
-        .then((data: any[]) => {
-          const dsData = data[0];
-          this.rk_datastore_Id = dsData.datastore_id;
-        });
+    const job1 = [this.ds.getDatastoreByKey('zougenrireki')];
+    await forkJoin(job1)
+      .toPromise()
+      .then((data: any[]) => {
+        const dsData = data[0];
+        this.rk_datastore_Id = dsData.datastore_id;
+      });
 
     const us = this.tokenService.getUser();
     const currentApp = us.current_app;
     const db = us.customer_id;
 
-    // 获取初始的年月
+    // 获取初始设定值
     await this.appService.getAppByID(currentApp, db).then(res => {
       if (res && res.configs.syori_ym) {
         this.swkControl = res.swk_control;
@@ -144,6 +150,9 @@ export class JournalsettingListComponent implements OnInit {
         this.swkControl = res.swk_control;
         this.handleMonth = '';
         this.form.patchValue({ handleMonth: '' });
+      }
+      if (res && res.confim_method) {
+        this.form.controls.confimMethod.setValue(res.confim_method);
       }
     });
     this.form.patchValue({ handleMonth: this.handleMonth });
@@ -179,7 +188,7 @@ export class JournalsettingListComponent implements OnInit {
     });
 
     this.js.findDownloadSetting(currentApp).then((data: any[]) => {
-      if (data['app_id']!="") {
+      if (data['app_id'] != '') {
         const rules = [];
         this.form.controls.layoutName.setValue(data['layout_name']);
         this.form.controls.charEncoding.setValue(data['char_encoding']);
@@ -197,8 +206,13 @@ export class JournalsettingListComponent implements OnInit {
 
   submit() {
     this.appId = this.tokenService.getUserApp();
-    const date = format(new Date(this.form.value.handleMonth), 'yyyy-MM');
-    this.appService.modifySwkSetting(this.appId, date, this.swkControl);
+    const params = {
+      app_id: this.appId,
+      handleMonth: format(new Date(this.form.value.handleMonth), 'yyyy-MM'),
+      swk_control: this.swkControl,
+      confim_method: this.form.controls.confimMethod.value
+    };
+    this.appService.modifySwkSetting(this.appId, params);
     this.message.success(this.i18n.translateLang('common.message.success.S_002'));
     this.init();
   }
@@ -260,7 +274,16 @@ export class JournalsettingListComponent implements OnInit {
   addField() {
     this.selectedFields = [
       ...this.selectedFields,
-      { field_id: '', setting_method: '2', download_name: '', edit_content: '', field_name: '',datastore_id:'',field_type:'',format:'' }
+      {
+        field_id: '',
+        setting_method: '2',
+        download_name: '',
+        edit_content: '',
+        field_name: '',
+        datastore_id: '',
+        field_type: '',
+        format: ''
+      }
     ];
   }
 
@@ -270,21 +293,21 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   updateFieldInfo(item: any) {
-    if (item.setting_method=="2") {
+    if (item.setting_method == '2') {
       const selectedField = this.swkFields.find(field => field.field_id === item.field_id);
       if (selectedField) {
         item.field_name = selectedField.field_name;
         item.field_type = selectedField.field_type;
         item.download_name = this.i18n.translateLang(selectedField.field_name);
-        item.datastore_id=this.swk_datastore_Id
+        item.datastore_id = this.swk_datastore_Id;
       }
-    }else if (item.setting_method=="3"){
+    } else if (item.setting_method == '3') {
       const selectedField = this.rkFields.find(field => field.field_id === item.field_id);
       if (selectedField) {
         item.field_name = selectedField.field_name;
         item.field_type = selectedField.field_type;
         item.download_name = this.i18n.translateLang(selectedField.field_name);
-        item.datastore_id=this.rk_datastore_Id
+        item.datastore_id = this.rk_datastore_Id;
       }
     }
   }
@@ -295,5 +318,41 @@ export class JournalsettingListComponent implements OnInit {
     if (previousIndex !== currentIndex) {
       moveItemInArray(this.selectedFields, previousIndex, currentIndex);
     }
+  }
+
+  // 打开 JSON 编辑弹窗
+  openJsonEditor(item: any): void {
+    this.currentItem = { edit_content: item.edit_content || '' };
+    item.field_type = 'function';
+    item.field_id = this.generateRandomFieldId();
+    this.fieldId = item.field_id;
+    item.edit_content = this.currentItem.edit_content;
+    this.isJsonEditorVisible = true;
+  }
+
+  // 关闭 JSON 编辑弹窗
+  closeJsonEditor(): void {
+    this.isJsonEditorVisible = false;
+  }
+
+  // 保存 JSON 内容
+  saveJson(): void {
+    try {
+      //解析JSON确保格式正确
+      JSON.parse(this.currentItem.edit_content);
+      // 找到对应item并更新 edit_content
+      const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
+      if (updatedItem) {
+        updatedItem.edit_content = this.currentItem.edit_content;
+      }
+      this.closeJsonEditor();
+    } catch (e) {
+      this.message.error('間違ったJSON形式、チェックしてください');
+    }
+  }
+
+  // 随机生成唯一的 field_id
+  generateRandomFieldId(): string {
+    return 'field_' + Math.floor(1000 + Math.random() * 9000).toString();
   }
 }
