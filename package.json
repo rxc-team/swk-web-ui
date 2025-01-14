@@ -42,6 +42,7 @@
     "jsbarcode": "^3.11.5",
     "lodash": "^4.17.15",
     "marked": "^4.0.9",
+    "monaco-editor": "^0.52.2",
     "ng-event-bus": "^1.2.0",
     "ng-zorro-antd": "13.0.1",
     "ng2-trim-directive": "^2.3.4",

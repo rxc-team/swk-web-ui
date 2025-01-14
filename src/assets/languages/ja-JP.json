@@ -62,7 +62,10 @@
       "upload": "アップロード",
       "uploadDrag": "クリックしてアップロードするか、ファイルをドラッグしてアップロードする",
       "uploadStart": "アップロード開始。",
-      "uploadfile": "ファイルをアップロード"
+      "uploadfile": "ファイルをアップロード",
+      "insertFormula": "数式の挿入",
+      "insertField": "フィールドの挿入",
+      "formulaCheck": "数式の検証"
     },
     "message": {
       "approveTitle": "承認メッセージ",
@@ -665,7 +668,9 @@
       "incAndDec": "増減仕訳",
       "other": "備考",
       "payment": "支払リース料仕訳",
-      "type": "仕訳名"
+      "type": "仕訳名",
+      "funcStatusWait": "式が有効かどうかを確認してください。",
+      "funcStatusSuccess": "式が検証されました。"
     },
     "login": {
       "captcha": "確認コード",

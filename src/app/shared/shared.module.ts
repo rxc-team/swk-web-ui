@@ -24,6 +24,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 // ng-zorro
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzImageModule } from 'ng-zorro-antd/image';
@@ -176,7 +177,8 @@ const ANTMODULES = [
   NzAnchorModule,
   NzBackTopModule,
   NzImageModule,
-  NzDividerModule
+  NzDividerModule,
+  NzCodeEditorModule
 ];
 
 const antDesignIcons = AllIcons as {

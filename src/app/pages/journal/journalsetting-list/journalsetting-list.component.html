@@ -266,7 +266,7 @@
                   </nz-select>
                 </ng-container>
                 <ng-container *ngIf="item.setting_method === '4'">
-                  <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">编辑 JSON</button>
+                  <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">条件追加</button>
                 </ng-container>
               </td>
               <!-- 日期形式 -->
@@ -354,18 +354,16 @@
 <!-- JSON 编辑弹窗 -->
 <nz-modal
   [(nzVisible)]="isJsonEditorVisible"
-  nzTitle="编辑 JSON"
-  [nzWidth]="800"
+  nzTitle="出力条件追加"
+  [nzWidth]="1000"
   (nzOnCancel)="closeJsonEditor()"
   (nzOnOk)="saveJson()"
 >
   <ng-template nzModalContent>
-    <textarea
-      nz-input
-      [(ngModel)]="currentItem.edit_content"
-      rows="20"
-      style="width: 100%; font-family: monospace; white-space: pre-wrap"
-      placeholder="请输入 JSON 内容"
-    ></textarea>
+    <app-func-editor
+    [(ngModel)]="jsonContent"
+    [datastoreId]="swk_datastore_Id"
+    (jsonContentChange)="onJsonContentChange($event)"
+    ></app-func-editor>
   </ng-template>
 </nz-modal>

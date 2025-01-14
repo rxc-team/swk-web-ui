@@ -112,8 +112,10 @@ export class JournalsettingListComponent implements OnInit {
   // 控制弹窗显示与否
   isJsonEditorVisible = false;
   //json内容
-  currentItem: { edit_content: string } = { edit_content: '' };
+  currentItem: string;
   fieldId: '';
+  api_key: string;
+  jsonContent = '';
 
   ngOnInit(): void {
     this.init();
@@ -322,11 +324,10 @@ export class JournalsettingListComponent implements OnInit {
 
   // 打开 JSON 编辑弹窗
   openJsonEditor(item: any): void {
-    this.currentItem = { edit_content: item.edit_content || '' };
     item.field_type = 'function';
     item.field_id = this.generateRandomFieldId();
+    this.jsonContent=item.edit_content
     this.fieldId = item.field_id;
-    item.edit_content = this.currentItem.edit_content;
     this.isJsonEditorVisible = true;
   }
 
@@ -337,22 +338,27 @@ export class JournalsettingListComponent implements OnInit {
 
   // 保存 JSON 内容
   saveJson(): void {
-    try {
+     try {
       //解析JSON确保格式正确
-      JSON.parse(this.currentItem.edit_content);
+      JSON.parse(this.jsonContent);
       // 找到对应item并更新 edit_content
       const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
       if (updatedItem) {
-        updatedItem.edit_content = this.currentItem.edit_content;
+        updatedItem.edit_content = this.jsonContent;
       }
       this.closeJsonEditor();
     } catch (e) {
       this.message.error('間違ったJSON形式、チェックしてください');
-    }
+    } 
   }
 
   // 随机生成唯一的 field_id
   generateRandomFieldId(): string {
     return 'field_' + Math.floor(1000 + Math.random() * 9000).toString();
+  }
+
+  // 当子组件的 JSON 内容发生变化时，更新父组件的 jsonContent
+  onJsonContentChange(newJsonContent: string) {
+    this.jsonContent = newJsonContent;
   }
 }
