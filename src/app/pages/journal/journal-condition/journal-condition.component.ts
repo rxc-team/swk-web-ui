@@ -224,8 +224,6 @@ export class JournalConditionComponent implements OnInit {
   onElseChange(value: string, ifIndex: number) {
     this.ifConditions[ifIndex].else_fixed_value = '';
     this.ifConditions[ifIndex].else_selected_fieldId = '';
-    console.log(value)
-    console.log(this.ifConditions[ifIndex].pre_else_type)
     if (value === 'new' && !(this.ifConditions.length > ifIndex + 1)) {
       this.addIfCondition();
       this.ifConditions[ifIndex].pre_else_type = value;
