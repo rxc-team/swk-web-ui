@@ -33,6 +33,27 @@
       </button>
     </nz-tab>
     <nz-tab [nzTitle]="'header.title.swkDownload' | translate">
+      <!-- レイアウト選択 -->
+      <!-- <nz-form-item>
+        <nz-form-label [nzSpan]="2">
+          {{ 'common.text.swkSelect' | translate }}
+        </nz-form-label>
+        <nz-form-control>
+          <nz-select 
+            formControlName="selectedCustom" 
+            nzAllowClear 
+            [ngStyle]="{ width: isSmall ? '220px' : '300px' }" 
+            (ngModelChange)="customChange()">
+            <nz-option *ngFor="let item of customs"
+                      [nzLabel]="item.custom_label"
+                      [nzValue]="item.custom_id"></nz-option>
+          </nz-select>
+        </nz-form-control>
+        <button nz-button nzType="primary" type="button" (click)="addSetting()">
+          <i nz-icon nzType="save" nzTheme="outline"></i>
+          {{ 'common.button.save' | translate }}
+        </button>
+      </nz-form-item> -->
       <!-- レイアウト名 -->
       <nz-form-item>
         <nz-form-label [nzSpan]="2">
@@ -44,7 +65,7 @@
         <button nz-button nzType="primary" type="button" (click)="addSetting()">
           <i nz-icon nzType="save" nzTheme="outline"></i>
           {{ 'common.button.save' | translate }}
-        </button>
+        </button>      
       </nz-form-item>
       <!-- 文字コード -->
       <nz-form-item>
@@ -54,7 +75,7 @@
         <nz-form-control>
           <nz-select formControlName="charEncoding" nzAllowClear [ngStyle]="{ width: isSmall ? '220px' : '300px' }">
             <nz-option nzValue="UTF-8" [nzLabel]="'UTF-8'"></nz-option>
-            <nz-option nzValue="Shift-JIS" [nzLabel]="'Shift-JIS'"></nz-option>
+            <nz-option nzValue="Shift-JIS" [nzLabel]="'Shift-JIS'"></nz-option>    
           </nz-select>
           <ng-template #errorCharEncoding let-control>
             <ng-container *ngIf="control.hasError('required')">
@@ -214,6 +235,7 @@
                   <nz-option nzValue="1" nzLabel="固定值"></nz-option>
                   <nz-option nzValue="2" nzLabel="仕訳台帳"></nz-option>
                   <nz-option nzValue="3" nzLabel="増減履歴台帳"></nz-option>
+                  <!-- <nz-option nzValue="4" nzLabel="カスタマイズ"></nz-option> -->
                   <nz-option nzValue="4" nzLabel="カスタマイズ"></nz-option>
                 </nz-select>
               </td>
@@ -265,8 +287,11 @@
                     </nz-option>
                   </nz-select>
                 </ng-container>
-                <ng-container *ngIf="item.setting_method === '4'">
+                <!-- <ng-container *ngIf="item.setting_method === '4'">
                   <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">条件追加</button>
+                </ng-container> -->
+                <ng-container *ngIf="item.setting_method === '4'">
+                  <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">カスタム条件追加</button>
                 </ng-container>
               </td>
               <!-- 日期形式 -->
@@ -352,12 +377,12 @@
   </nz-tabset>
 </form>
 <!-- JSON 编辑弹窗 -->
-<nz-modal
+<!-- <nz-modal
   [(nzVisible)]="isJsonEditorVisible"
   nzTitle="出力条件追加"
   [nzWidth]="1000"
   (nzOnCancel)="closeJsonEditor()"
-  (nzOnOk)="saveJson()"
+
 >
   <ng-template nzModalContent>
     <app-func-editor
@@ -365,5 +390,22 @@
     [datastoreId]="swk_datastore_Id"
     (jsonContentChange)="onJsonContentChange($event)"
     ></app-func-editor>
+  </ng-template>
+</nz-modal> -->
+
+<!-- JSON 编辑弹窗 -->
+<nz-modal
+  [(nzVisible)]="isJsonEditorVisible"
+  nzTitle="カスタム出力条件"
+  [nzWidth]="1000"
+  (nzOnCancel)="closeJsonEditor()"
+  (nzOnOk)="handleOK()"
+  [nzStyle]="{ height: '750px', overflow: 'auto' }"
+>
+  <ng-template nzModalContent>
+    <app-journal-condition
+    [ifConditions]="ifConditions"
+    [datastoreId]="swk_datastore_Id"
+    ></app-journal-condition>
   </ng-template>
 </nz-modal>

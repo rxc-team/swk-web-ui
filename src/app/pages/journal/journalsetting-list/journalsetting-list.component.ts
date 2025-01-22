@@ -2,13 +2,40 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { format } from 'date-fns';
 
-import { Component, OnInit } from '@angular/core';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { AppService, DatastoreService, FieldService, JournalService } from '@api';
 import { I18NService, TokenStorageService } from '@core';
+import { ActivatedRoute } from '@angular/router';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { forkJoin } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import {JournalConditionComponent} from '../journal-condition/journal-condition.component'
+
+interface IfCondition {
+  field_groups: ConditionGroup[];
+  condition_name: string;
+  active: boolean;
+  collapaseNotice: string;
+  then_value: string;
+  else_value: string;
+  shinki_flag?: boolean;
+}
+
+// 定义条件和条件区的数据结构
+interface Condition {
+  con_field: string;
+  con_operator: string;
+  con_value: string;
+}
+
+interface ConditionGroup {
+  type: 'and' | 'or'; // 组内连接符
+  field_cons: Condition[]; // 组内的条件
+  switch_type: 'and' | 'or'; // 组与组之间的连接符
+}
 
 @Component({
   selector: 'app-journal-list',
@@ -16,10 +43,13 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
   styleUrls: ['./journalsetting-list.less']
 })
 export class JournalsettingListComponent implements OnInit {
+  @ViewChild(JournalConditionComponent) childComponent: JournalConditionComponent;
   isSmall: any;
   constructor(
     private tokenService: TokenStorageService,
+    private modal: NzModalService,
     private appService: AppService,
+    private router: ActivatedRoute,
     private message: NzMessageService,
     private i18n: I18NService,
     private js: JournalService,
@@ -28,11 +58,12 @@ export class JournalsettingListComponent implements OnInit {
     public ds: DatastoreService
   ) {
     this.form = this.fb.group({
+      selectedCustom: ['shinki', [Validators.required]],
       layoutName: ['', [Validators.required]],
-      charEncoding: ['UTF-8', [Validators.required]],
-      headerRow: ['exsit', [Validators.required]],
-      separatorChar: ['separatorCharComma', [Validators.required]],
-      lineBreaks: ['lf', [Validators.required]],
+      charEncoding: ['', [Validators.required]],
+      headerRow: ['', [Validators.required]],
+      separatorChar: ['', [Validators.required]],
+      lineBreaks: ['', [Validators.required]],
       fixedLength: [false],
       numberItems: [0, [Validators.required]],
       validFlag: ['', [Validators.required]],
@@ -102,6 +133,7 @@ export class JournalsettingListComponent implements OnInit {
   swkFields: any[] = [];
   rkFields: any[] = [];
   selectedFields: any[] = [];
+  selectedFields1: any[] = [];
   selectedOption = '';
   swk_datastore_Id = '';
   rk_datastore_Id = '';
@@ -111,12 +143,18 @@ export class JournalsettingListComponent implements OnInit {
   swkControl = false;
   // 控制弹窗显示与否
   isJsonEditorVisible = false;
-  //json内容
+   // 控制弹窗显示与否
+   isJsonEditorVisible2 = false;
+  // json内容
   currentItem: string;
   fieldId: '';
   api_key: string;
   jsonContent = '';
-
+  // 可选出力自定义
+  customs: any[] = [];
+  ifConditions:IfCondition[] = [];
+  ifConditions1:IfCondition[] = [];
+  
   ngOnInit(): void {
     this.init();
   }
@@ -202,8 +240,70 @@ export class JournalsettingListComponent implements OnInit {
         this.form.controls.validFlag.setValue(data['valid_flag']);
         rules.push(...data['field_rule']);
         this.selectedFields = rules;
+        this.selectedFields1 = rules;
+        // 在modal数据展示前进行伸缩组件初始化，需提前处理
+        if(Array.isArray(this.selectedFields)) {
+          this.selectedFields.forEach(field => {
+            if (Array.isArray(field.field_conditions) && field.setting_method === '4') {
+              field.field_conditions.forEach(con => {
+                con.active = false; 
+                con.collapaseNotice = '点击展开条件详情';  
+                if (con.then_type === 'field') {
+                   con.then_selected_fieldId = con.then_value;
+                }else if(con.then_type === 'value') {
+                  con.then_fixed_value = con.then_value;
+                }
+                if (con.else_type === 'field') {
+                  con.else_selected_fieldId = con.else_value;
+               }else if(con.else_type === 'value') {
+                 con.else_fixed_value = con.else_value;
+               }
+              });
+            }
+          });
+        }     
       }
     });
+
+
+    // this.js.findDownloadSettings(currentApp).then((data: any[]) => {
+    //   data['field_conf'].forEach(item => {
+    //     // 去除 'other' 字段并将对象添加到 array2 中
+    //     const mappedItem = { custom_id: item.layout_name, custom_label: item.layout_name, ...item };
+    //     this.customs.push(mappedItem);  // 将剩余的字段添加到 array2
+    //   });
+    // })
+    
+    
+    // 初始化出力自定义
+    this.customs.push({
+      custom_id:"shinki",
+      custom_label:"新規作成",
+      custom_name:"新規作成",
+    })
+  }
+
+  // 选择出力自定义
+  customChange() {
+    const rules = [];
+    const selectCustom = this.customs.find(item => item.custom_id === this.form.controls.selectedCustom.value);
+    if(this.form.controls.selectedCustom.value === 'shinki'){
+      this.form.controls.layoutName.setValue('');
+      this.selectedFields = [];
+    }else {
+      this.form.controls.layoutName.setValue(selectCustom['custom_id']);
+      rules.push(...selectCustom['field_rule']);
+      this.selectedFields = rules;
+    }
+    this.form.controls.charEncoding.setValue(selectCustom['char_encoding']);
+    this.form.controls.headerRow.setValue(selectCustom['header_row']);
+    this.form.controls.separatorChar.setValue(selectCustom['separator_char']);
+    this.form.controls.lineBreaks.setValue(selectCustom['line_breaks']);
+    this.form.controls.fixedLength.setValue(selectCustom['fixed_length']);
+    this.form.controls.numberItems.setValue(selectCustom['number_items']);
+    this.form.controls.validFlag.setValue(selectCustom['valid_flag']);
+   
+
   }
 
   submit() {
@@ -267,7 +367,6 @@ export class JournalsettingListComponent implements OnInit {
       valid_flag: this.form.controls.validFlag.value,
       field_rule: this.selectedFields
     };
-
     this.js.addDownloadSetting(params).then(() => {
       this.message.success(this.i18n.translateLang('common.message.success.S_001'));
     });
@@ -280,11 +379,12 @@ export class JournalsettingListComponent implements OnInit {
         field_id: '',
         setting_method: '2',
         download_name: '',
-        edit_content: '',
+        field_conditions: '',
         field_name: '',
         datastore_id: '',
         field_type: '',
-        format: ''
+        format: '',
+        edit_content:''
       }
     ];
   }
@@ -323,33 +423,116 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   // 打开 JSON 编辑弹窗
-  openJsonEditor(item: any): void {
-    item.field_type = 'function';
-    item.field_id = this.generateRandomFieldId();
-    this.jsonContent=item.edit_content
-    this.fieldId = item.field_id;
-    this.isJsonEditorVisible = true;
-  }
+  // openJsonEditor(item: any): void {
+  //   item.field_type = 'function';
+  //   item.field_id = this.generateRandomFieldId();
+  //   this.jsonContent=item.edit_content
+  //   this.fieldId = item.field_id;
+  //   this.isJsonEditorVisible = true;
+  // }
+
+    // 打开 JSON 编辑弹窗
+    openJsonEditor(item: any): void {
+      item.field_type = 'function';
+      item.field_id = this.generateRandomFieldId();
+      // setTimeout(() => {
+      //   this.childComponent.ifConditions = Object.assign(item.field_conditions)
+      // }, 100)
+      this.ifConditions = item.field_conditions
+      this.fieldId = item.field_id;
+      this.isJsonEditorVisible = true;     
+    }
+
+  // // 关闭 JSON 编辑弹窗
+  // closeJsonEditor(): void {
+  //   this.isJsonEditorVisible = false;
+  // }
 
   // 关闭 JSON 编辑弹窗
   closeJsonEditor(): void {
+    /*  const us = this.tokenService.getUser();
+    const currentApp = us.current_app;
+    this.js.findDownloadSetting(currentApp).then((data: any[]) => {
+     
+      if (data['app_id'] != '') {
+        const rules = [];
+        this.form.controls.layoutName.setValue(data['layout_name']);
+        this.form.controls.charEncoding.setValue(data['char_encoding']);
+        this.form.controls.headerRow.setValue(data['header_row']);
+        this.form.controls.separatorChar.setValue(data['separator_char']);
+        this.form.controls.lineBreaks.setValue(data['line_breaks']);
+        this.form.controls.fixedLength.setValue(data['fixed_length']);
+        this.form.controls.numberItems.setValue(data['number_items']);
+        this.form.controls.validFlag.setValue(data['valid_flag']);
+        rules.push(...data['field_rule']);
+        this.selectedFields = rules;
+        // 在modal数据展示前进行伸缩组件初始化，需提前处理
+        if(Array.isArray(this.selectedFields)) {
+          this.selectedFields.forEach(field => {
+            if (Array.isArray(field.field_conditions) && field.setting_method === '4') {
+              field.field_conditions.forEach(con => {
+                con.active = false; 
+                con.collapaseNotice = '点击展开条件详情';  
+                if (con.then_type === 'field') {
+                   con.then_selected_fieldId = con.then_value;
+                }else if(con.then_type === 'value') {
+                  con.then_fixed_value = con.then_value;
+                }
+                if (con.else_type === 'field') {
+                  con.else_selected_fieldId = con.else_value;
+               }else if(con.else_type === 'value') {
+                 con.else_fixed_value = con.else_value;
+               }
+              });
+            }
+          });
+        }
+      }
+    }); 
+    const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
+    if (updatedItem) {
+      updatedItem.field_conditions = this.ifConditions1;
+    }   */
     this.isJsonEditorVisible = false;
   }
 
   // 保存 JSON 内容
-  saveJson(): void {
-     try {
-      //解析JSON确保格式正确
-      JSON.parse(this.jsonContent);
-      // 找到对应item并更新 edit_content
-      const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
-      if (updatedItem) {
-        updatedItem.edit_content = this.jsonContent;
+  // saveJson(): void {
+  //    try {
+  //     //解析JSON确保格式正确
+  //     JSON.parse(this.jsonContent);
+  //     // 找到对应item并更新 edit_content
+  //     const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
+  //     if (updatedItem) {
+  //       updatedItem.edit_content = this.jsonContent;
+  //     }
+  //     this.closeJsonEditor();
+  //   } catch (e) {
+  //     this.message.error('間違ったJSON形式、チェックしてください');
+  //   } 
+  // }
+
+  handleOK() {
+    const ifConditions = this.childComponent.ifConditions;
+  
+    ifConditions.forEach(con => {
+      if (con.then_type === 'field') {
+        con.then_value = con.then_selected_fieldId;
+      }else if(con.then_type === 'value') {
+        con.then_value = con.then_fixed_value;
       }
-      this.closeJsonEditor();
-    } catch (e) {
-      this.message.error('間違ったJSON形式、チェックしてください');
-    } 
+      if (con.else_type === 'field') {
+        con.else_value = con.else_selected_fieldId;
+      }else if(con.else_type === 'value') {
+        con.else_value = con.else_fixed_value;
+      }
+    });
+  
+    const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
+      if (updatedItem) {
+        updatedItem.field_conditions = ifConditions;
+      }
+      this.isJsonEditorVisible = false;
   }
 
   // 随机生成唯一的 field_id
@@ -357,8 +540,4 @@ export class JournalsettingListComponent implements OnInit {
     return 'field_' + Math.floor(1000 + Math.random() * 9000).toString();
   }
 
-  // 当子组件的 JSON 内容发生变化时，更新父组件的 jsonContent
-  onJsonContentChange(newJsonContent: string) {
-    this.jsonContent = newJsonContent;
-  }
 }

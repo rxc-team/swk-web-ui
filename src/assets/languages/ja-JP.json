@@ -233,6 +233,7 @@
       "supportFile": "アップロードできるファイル:",
       "swkConfimMethod": "仕訳確認方法",
       "swkName": "レイアウト名",
+      "swkSelect": "レイアウト選択",
       "swkControl": "仕訳作成可否",
       "totalTmp": "合計{{total}}件,現在{{now}}-{{size}}件",
       "unnamed": "無名",
