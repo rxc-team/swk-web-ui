@@ -4,8 +4,8 @@ import { NzConfigService } from 'ng-zorro-antd/core/config';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { FormBuilder, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { FieldService, JournalService } from '@api';
 import { I18NService, TokenStorageService } from '@core';
@@ -32,6 +32,7 @@ interface IfCondition {
   collapaseNotice: string;
   then_type?: string;
   else_type?: string;
+  pre_else_type?:string;
   then_selected_fieldId?: string;
   then_fixed_value?: string;
   else_selected_fieldId?: string;
@@ -45,75 +46,18 @@ interface IfCondition {
   selector: 'app-journal-condition',
   templateUrl: './journal-condition.component.html',
   styleUrls: ['./journal-condition.component.less'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => JournalConditionComponent),
-      multi: true
-    }
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  providers: []
 })
-export class JournalConditionComponent implements OnInit, OnDestroy {
-  @Input() returnType: string;
-  @Input() readOnly: boolean;
-  @Output() jsonContentChange = new EventEmitter<string>();
-  @Input() handleOK = new EventEmitter<string>();
-  @Input() jsonContent: string;
+export class JournalConditionComponent implements OnInit {
   @Input() datastoreId: string;
   @Input() ifConditions: IfCondition[] = [];
 
-  verifyError: string;
-  verifyErrorParam: Object;
-  formGroup: FormGroup;
+  constructor(private ms: NzModalService, private fs: FieldService) {}
 
-  constructor(
-    private js: JournalService,
-    private fs: FieldService,
-    private modal: NzModalService,
-    private router: ActivatedRoute,
-    private tokenService: TokenStorageService,
-    private nzConfigService: NzConfigService,
-    private eventBus: NgEventBus,
-    private i18n: I18NService,
-    private fb: FormBuilder
-  ) {}
-
-  @Input() isSmall = false;
-  // 组件对应的 “ ngModel ”
-  value = '';
-  // 组件对应的 “ disabled ”
-  isDisabled: boolean;
-  // 改变值回调
-  onChangeListener: Function;
-  // 交互回调
-  onTouchedListener: Function;
-  // 编辑器设置
-  editorOptions = {
-    theme: 'vs',
-    language: 'json'
-  };
-  checkStatus = new BehaviorSubject<string>('wait');
-  // 编辑器实例
-  editor?: editor.ICodeEditor;
+  // 加载中标识符
+  isLoading = true;
+  // 可选台账字段
   swkFields: any[] = [];
-  rows = [{ con_field: '', con_operator: '=', con_value: '' }];
-  operators: string[] = [];
-  selectionType: 'field' | 'value' = 'field'; // 默认选择台账字段
-
-  // 存储用户选择的字段或固定值
-  selectedFieldId: string;
-  fixedValue: string;
-
-  selectionType1: 'field' | 'value' = 'field'; // 默认选择台账字段
-
-  // 存储用户选择的字段或固定值
-  selectedFieldId1: string;
-  fixedValue1: string;
-  selectedCondition: string;
-  selectedOperator: string;
-  groups: ConditionGroup[] = [];
-  ifConditions1: IfCondition[] = []
 
   //临时模板数据 模板功能TODO
   tempIfConditions: IfCondition[] = [
@@ -138,7 +82,7 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
       ],
       condition_name: 'カスタム条件1',
       active: false,
-      collapaseNotice: '点击展开条件详情',
+      collapaseNotice: '詳細を表示するにはクリックしてください',
       then_value: 'keiyakuno',
       else_value: 'keiyakuno'
     },
@@ -163,7 +107,7 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
       ],
       condition_name: 'カスタム条件2',
       active: false,
-      collapaseNotice: '点击展开条件详情',
+      collapaseNotice: '詳細を表示するにはクリックしてください',
       then_value: 'keiyakuno',
       else_value: 'keiyakuno'
     },
@@ -188,13 +132,11 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
       ],
       condition_name: 'カスタム条件3',
       active: false,
-      collapaseNotice: '点击展开条件详情',
+      collapaseNotice: '詳細を表示するにはクリックしてください',
       then_value: 'keiyakuno',
       else_value: 'keiyakuno'
     }
   ];
-
-
 
   ngOnInit() {
     // modal框内查询可选字段
@@ -206,56 +148,54 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
         this.swkFields = [];
       }
       this.swkFields = _.sortBy(this.swkFields, 'display_order');
+      this.isLoading = false;
     });
   }
 
-  ngOnDestroy(): void {
-    this.checkStatus.unsubscribe();
-  }
-
-  /**
-   * 自定义当组件发生改变时，会调用的方法
-   */
-  onChange(payload) {
-    this.value = payload;
-    //this.onChangeListener(payload); // 告诉form，你的表单值改变成了payload
-    //this.onTouchedListener(); // 告诉form，你的表单有交互发生
-    this.jsonContentChange.emit(this.value);
-    this.eventBus.cast('func:verify', null);
-    this.checkStatus.next('wait');
-  }
-
-  // 添加新行
-  addRow(): void {
-    this.rows.push({ con_field: '', con_operator: '', con_value: '' });
-  }
-
-  // 删除当前行
-  removeRow(index: number): void {
-    if (this.rows.length > 1) {
-      this.rows.splice(index, 1);
+  // 添加条件
+  addIfCondition() {
+    if (this.ifConditions === null) {
+      this.ifConditions = [
+        {
+          field_groups: [],
+          condition_name: '',
+          active: false,
+          collapaseNotice: '詳細を表示するにはクリックしてください',
+          then_value: '',
+          else_value: '',
+          then_type: '',
+          else_type: '',
+          then_selected_fieldId: '',
+          then_fixed_value: '',
+          else_selected_fieldId: '',
+          else_fixed_value: ''
+        }
+      ];
+    } else {
+      this.ifConditions.push({
+        field_groups: [],
+        condition_name: '',
+        active: false,
+        collapaseNotice: '詳細を表示するにはクリックしてください',
+        then_value: '',
+        else_value: '',
+        then_type: '',
+        else_type: '',
+        then_selected_fieldId: '',
+        then_fixed_value: '',
+        else_selected_fieldId: '',
+        else_fixed_value: ''
+      });
     }
   }
 
-  addIfCondition() {
-    this.ifConditions.push({
-      field_groups: [],
-      condition_name: '',
-      active: false,
-      collapaseNotice: '点击展开条件详情',
-      then_value: '',
-      else_value: '',
-      then_type: '',
-      else_type: '',
-      then_selected_fieldId: '',
-      then_fixed_value: '',
-      else_selected_fieldId: '',
-      else_fixed_value: ''
-    });
-  }
-
+  // 各级删除条件和添加条件如下
   removeIfCondition(ifIndex: number) {
     this.ifConditions.splice(ifIndex, 1);
+  }
+
+  removeAfterIfCondition(ifIndex: number) {
+    this.ifConditions.splice(ifIndex + 1);
   }
 
   addConditionGroup(type: 'and' | 'or', ifIndex: number) {
@@ -274,17 +214,43 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
     this.ifConditions[ifIndex].field_groups.splice(groupIndex, 1);
   }
 
+  // AND/OR 切换处理
   onSwitchChange(value: boolean, groupIndex: number, ifIndex: number) {
-    // 当开关切换时，改变字符串值
+    // 当开关切换时，bool转string
     this.ifConditions[ifIndex].field_groups[groupIndex].switch_type = value || 'or' ? 'and' : 'or';
+  }
+
+  // Else类型选择处理
+  onElseChange(value: string, ifIndex: number) {
+    this.ifConditions[ifIndex].else_fixed_value = '';
+    this.ifConditions[ifIndex].else_selected_fieldId = '';
+    console.log(value)
+    console.log(this.ifConditions[ifIndex].pre_else_type)
+    if (value === 'new' && !(this.ifConditions.length > ifIndex + 1)) {
+      this.addIfCondition();
+      this.ifConditions[ifIndex].pre_else_type = value;
+    } else if (value !== 'new' && this.ifConditions[ifIndex].pre_else_type === 'new') {
+      this.ms.confirm({
+        nzTitle: '操作を確認する',
+        nzContent: '条件追加をキャンセルしたため、この操作により以下の条件がすべて削除されます。よろしいですか?',
+        nzOnOk: () => {
+          this.removeAfterIfCondition(ifIndex);
+          this.ifConditions[ifIndex].pre_else_type = value;
+        },
+        nzOnCancel: () => {
+          this.ifConditions[ifIndex].else_type = 'new';
+          this.ifConditions[ifIndex].pre_else_type = 'new';
+        }
+      });
+    } 
   }
 
   // 折叠面板点击触发
   collapaseChange(ifIndex: number) {
     if (this.ifConditions[ifIndex].active) {
-      this.ifConditions[ifIndex].collapaseNotice = '点击收起条件详情';
+      this.ifConditions[ifIndex].collapaseNotice = '詳細を非表示にするにはクリックしてください';
     } else {
-      this.ifConditions[ifIndex].collapaseNotice = '点击展开条件详情';
+      this.ifConditions[ifIndex].collapaseNotice = '詳細を表示するにはクリックしてください';
     }
   }
 
@@ -297,7 +263,7 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
       this.ifConditions[ifIndex].then_value = '';
       this.ifConditions[ifIndex].shinki_flag = true;
     } else {
-      // 浅拷贝
+      // 深拷贝
       this.ifConditions[ifIndex] = Object.assign(
         {},
         this.tempIfConditions.find(ifCondition => ifCondition.condition_name === conditionName)
@@ -311,97 +277,4 @@ export class JournalConditionComponent implements OnInit, OnDestroy {
 
   // 保存模板 TODO
   saveCondition(ifCondition: IfCondition) {}
-
-  // createCondition() {
-  //   let bigConditions = this.groups;
-  //   // 最后的 IF 条件模板
-  //   let ifJson = '{"$cond":{"if":"a","then":"b","else":"c"}}';
-  //   let tempJson;
-  //   // 只有一个大区域时
-  //   if (bigConditions.length === 1) {
-  //     // 获得所有小条件
-  //     let conditions = bigConditions[0].field_cons;
-  //     // 只须获得该大区域内部逻辑
-  //     let innerLogic = bigConditions[0].type;
-  //     // 因为只有一个大区域，只用区域内小条件拼接
-  //     tempJson = this.parseInnerLogic(conditions, innerLogic);
-  //     // 两个或两个以上大区域时
-  //   } else if (bigConditions.length > 1) {
-  //     // 循环大区域
-  //     bigConditions.forEach((bigCon, index) => {
-  //       // 获得小条件数组
-  //       let conditions = bigCon.field_cons;
-  //       // 获得该区域的内部逻辑
-  //       let innerLogic = bigCon.type;
-  //       // 第二个区域后的拼接需要执行区域内拼接和区域间拼接
-  //       if (index > 0) {
-  //         // 因为有错位关系，第一个区域的条件和外部逻辑在上一次循环中。第二个区域的条件在本次循环中
-  //         let outerLogic = bigConditions[index - 1].switch_type;
-  //         let json1 = tempJson;
-  //         // 区域内拼接
-  //         let json2 = this.parseInnerLogic(conditions, innerLogic);
-  //         // 区域间拼接
-  //         tempJson = this.parseOuterLogic(json1, json2, outerLogic);
-  //         // 第一次循环，第一个区域拼接只需要区域内拼接
-  //       } else {
-  //         tempJson = this.parseInnerLogic(conditions, innerLogic);
-  //       }
-  //     });
-  //   }
-  //   // If条件替换
-  //   ifJson = ifJson.replace(new RegExp(`(.*)"a"`), '$1' + tempJson);
-  //   if (this.selectionType == 'field') {
-  //     ifJson = ifJson.replace(new RegExp(`(.*)b`), '$1' + this.selectedFieldId);
-  //   } else {
-  //     ifJson = ifJson.replace(new RegExp(`(.*)c`), '$1' + this.fixedValue);
-  //   }
-  //   if (this.selectionType1 == 'field') {
-  //     ifJson = ifJson.replace(new RegExp(`(.*)b`), '$1' + this.selectedFieldId1);
-  //   } else {
-  //     ifJson = ifJson.replace(new RegExp(`(.*)c`), '$1' + this.fixedValue1);
-  //   }
-  // }
-
-  // // 区域内Json替换
-  // parseInnerLogic(conditions: any[], logic: string): string {
-  //   let temp = '';
-  //   // 只有一个条件时，不额外添加or 或 and
-  //   if (conditions.length === 1) {
-  //     conditions[0].con_operator = conditions[0].con_operator.replace(new RegExp(`(.*)a`), '$1' + '$items.' + conditions[0].field + '.value');
-  //     conditions[0].con_operator = conditions[0].con_operator.replace(new RegExp(`(.*)b`), '$1' + conditions[0].value);
-  //     return conditions[0].operator;
-  //   }
-  //   // 超过一个条件时，循环拼接条件
-  //   conditions.forEach((con, index) => {
-  //     con.con_operator = con.con_operator.replace(new RegExp(`(.*)a`), '$1' + '$items.' + con.field + '.value');
-  //     con.con_operator = con.con_operator.replace(new RegExp(`(.*)b`), '$1' + con.value);
-  //     if (index === 0) {
-  //       temp = temp.concat('[');
-  //     }
-  //     temp = temp.concat(con.operator);
-  //     if (index < conditions.length - 1) {
-  //       temp = temp.concat(',');
-  //     }
-  //     if (index === conditions.length - 1) {
-  //       temp = temp.concat(']');
-  //     }
-  //   });
-
-  //   if (logic === 'and') {
-  //     return '{"$and":' + temp + '}';
-  //   } else if (logic === 'or') {
-  //     return '{"$or":' + temp + '}';
-  //   }
-  // }
-
-  // // 区域间Json替换
-  // parseOuterLogic(json1: string, json2: string, logic: string): string {
-  //   let temp = '';
-  //   temp = temp.concat('[').concat(json1).concat(',').concat(json2).concat(']');
-  //   if (logic === 'and') {
-  //     return '{"$and":' + temp + '}';
-  //   } else if (logic === 'or') {
-  //     return '{"$or":' + temp + '}';
-  //   }
-  // }
 }

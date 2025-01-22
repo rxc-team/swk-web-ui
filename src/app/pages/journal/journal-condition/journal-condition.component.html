@@ -1,95 +1,241 @@
-<div *ngFor="let ifCondition of ifConditions; let ifIndex = index">
-  <!-- 条件运算符 -->
-  <div nz-row>
-    <nz-tag nzColor="#108ee9" style="margin-right: 10px; margin-bottom: 10px">条件No.{{ ifIndex + 1 }}</nz-tag>
-    <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px">
-      <nz-form-item style="margin-bottom: 0px">
-        <nz-form-control>
-          <nz-select
-            style="width: 100%"
-            [(ngModel)]="ifCondition.condition_name"
-            (ngModelChange)="
-              ifConditionChange(ifIndex, ifCondition.condition_name, ifCondition.collapaseNotice, ifCondition.active)
-            "
-          >
-            <nz-option
-              *ngFor="let item of tempIfConditions"
-              [nzLabel]="item.condition_name"
-              [nzValue]="item.condition_name"
-            ></nz-option>
-            <nz-option nzLabel="新规条件" nzValue="shinki"></nz-option>
-          </nz-select>
-        </nz-form-control>
-      </nz-form-item>
-    </div>
-    <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px" *ngIf="ifCondition.shinki_flag">
-      <nz-form-item style="margin-bottom: 0px">
-        <nz-form-control>
-          <input
-            nz-input
-            style="width: 100%"
-            [(ngModel)]="ifCondition.newConditionName"
-            placeholder="请输入新规条件名"
-          />
-        </nz-form-control>
-      </nz-form-item>
-    </div>
-    <div nz-col nzSpan="6">
-      <button nz-button (click)="saveCondition(ifCondition)" nzType="primary" style="margin-right: 10px">保存</button>
-      <button nz-button (click)="removeIfCondition(ifIndex)" nzType="primary" nzDanger>删除</button>
-    </div>
-  </div>
-  <nz-collapse style="margin-right: 10px; margin-bottom: 30px">
-    <nz-collapse-panel
-      [nzHeader]="ifCondition.collapaseNotice"
-      [(nzActive)]="ifCondition.active"
-      [nzDisabled]="ifCondition.disabled"
-      (nzActiveChange)="collapaseChange(ifIndex)"
-    >
-      <div style="display: flex; align-items: center; margin-bottom: 10px">
-        <button nz-button (click)="addConditionGroup('and', ifIndex)" nzType="primary" style="margin-right: 10px">
-          添加 AND 区
-        </button>
-        <button nz-button (click)="addConditionGroup('or', ifIndex)" nzType="primary" style="margin-right: 10px">
-          添加 OR 区
-        </button>
-        <!-- <button nz-button (click)="createCondition()">生成</button> -->
+<div *ngIf="isLoading">
+  <nz-spin></nz-spin>
+</div>
+<div *ngIf="!isLoading">
+  <div *ngFor="let ifCondition of ifConditions; let ifIndex = index">
+    <!-- 条件运算符 -->
+    <div nz-row>
+      <nz-tag nzColor="#108ee9" style="margin-right: 10px; margin-bottom: 10px">条件No.{{ ifIndex + 1 }}</nz-tag>
+      <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px">
+        <nz-form-item style="margin-bottom: 0px">
+          <nz-form-control>
+            <nz-select
+              style="width: 100%"
+              [(ngModel)]="ifCondition.condition_name"
+              (ngModelChange)="
+                ifConditionChange(ifIndex, ifCondition.condition_name, ifCondition.collapaseNotice, ifCondition.active)
+              "
+            >
+              <nz-option
+                *ngFor="let item of tempIfConditions"
+                [nzLabel]="item.condition_name"
+                [nzValue]="item.condition_name"
+              ></nz-option>
+              <nz-option nzLabel="新规条件" nzValue="shinki"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
       </div>
+      <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px" *ngIf="ifCondition.shinki_flag">
+        <nz-form-item style="margin-bottom: 0px">
+          <nz-form-control>
+            <input
+              nz-input
+              style="width: 100%"
+              [(ngModel)]="ifCondition.newConditionName"
+              placeholder="请输入新规条件名"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="6">
+        <button nz-button (click)="saveCondition(ifCondition)" nzType="primary" style="margin-right: 10px">保存</button>
+        <button nz-button (click)="removeIfCondition(ifIndex)" nzType="primary" nzDanger>削除</button>
+      </div>
+    </div>
+    <nz-collapse style="margin-right: 10px; margin-bottom: 30px">
+      <nz-collapse-panel
+        [nzHeader]="ifCondition.collapaseNotice"
+        [(nzActive)]="ifCondition.active"
+        [nzDisabled]="ifCondition.disabled"
+        (nzActiveChange)="collapaseChange(ifIndex)"
+      >
+        <div style="display: flex; align-items: center; margin-bottom: 10px">
+          <button nz-button (click)="addConditionGroup('and', ifIndex)" nzType="primary" style="margin-right: 10px">
+            ANDグループ追加
+          </button>
+          <button nz-button (click)="addConditionGroup('or', ifIndex)" nzType="primary" style="margin-right: 10px">
+            ORグループ追加
+          </button>
+          <!-- <button nz-button (click)="createCondition()">生成</button> -->
+        </div>
 
-      <div *ngFor="let group of ifCondition.field_groups; let groupIndex = index">
-        <nz-card nzTitle="{{ group.type.toUpperCase() }} 区" [nzBordered]="true">
-          <!-- 区块标题和添加条件按钮 -->
-          <div style="margin-bottom: 10px">
-            <span>
-              <button nz-button (click)="addCondition(groupIndex, ifIndex)" nzType="primary" style="margin-right: 10px">
-                添加条件
-              </button>
-              <button nz-button (click)="removeConditionGroup(groupIndex, ifIndex)" style="margin-right: 10px" nzDanger>
-                <i nz-icon nzType="delete"></i>
-                削除
-              </button>
+        <div *ngFor="let group of ifCondition.field_groups; let groupIndex = index">
+          <nz-card nzTitle="{{ group.type.toUpperCase() }} グループ" [nzBordered]="true">
+            <!-- 区块标题和添加条件按钮 -->
+            <div style="margin-bottom: 10px">
+              <span>
+                <button
+                  nz-button
+                  (click)="addCondition(groupIndex, ifIndex)"
+                  nzType="primary"
+                  style="margin-right: 10px"
+                >
+                  条件追加
+                </button>
+                <button
+                  nz-button
+                  (click)="removeConditionGroup(groupIndex, ifIndex)"
+                  style="margin-right: 10px"
+                  nzDanger
+                >
+                  <i nz-icon nzType="delete"></i>
+                  削除
+                </button>
 
-              <!-- 只有不是最后一个组时才显示开关 -->
-              <nz-switch
-                *ngIf="groupIndex < ifCondition.field_groups.length - 1"
-                [(ngModel)]="group.switch_type"
-                [nzCheckedChildren]="'AND'"
-                [nzUnCheckedChildren]="'OR'"
-                style="margin-left: 10px"
-                (ngModelChange)="onSwitchChange($event, groupIndex, ifIndex)"
-              ></nz-switch>
-            </span>
-          </div>
-          <!-- 条件部分 -->
-          <div
-            *ngFor="let condition of group.field_cons; let conditionIndex = index"
-            style="display: flex; align-items: center; margin-bottom: 10px"
-          >
-            <!-- 条件字段 -->
-            <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
-              <nz-form-item style="margin-bottom: 0px">
+                <!-- 只有不是最后一个组时才显示开关 -->
+                <nz-switch
+                  *ngIf="groupIndex < ifCondition.field_groups.length - 1"
+                  [(ngModel)]="group.switch_type"
+                  [nzCheckedChildren]="'AND'"
+                  [nzUnCheckedChildren]="'OR'"
+                  style="margin-left: 10px"
+                  (ngModelChange)="onSwitchChange($event, groupIndex, ifIndex)"
+                ></nz-switch>
+              </span>
+            </div>
+            <!-- 条件部分 -->
+            <div
+              *ngFor="let condition of group.field_cons; let conditionIndex = index"
+              style="display: flex; align-items: center; margin-bottom: 10px"
+            >
+              <!-- 条件字段 -->
+              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+                <nz-form-item style="margin-bottom: 0px">
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="condition.con_field">
+                      <nz-option
+                        *ngFor="let item of swkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <!-- 条件运算符 -->
+              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+                <nz-form-item style="margin-bottom: 0px">
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="condition.con_operator">
+                      <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue='{"$eq":["a","b"]}'></nz-option>
+                      <nz-option
+                        [nzLabel]="'page.datastore.notEqual' | translate"
+                        nzValue='{"$ne":["a","b"]}'
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <!-- 条件值 -->
+              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
                 <nz-form-control>
-                  <nz-select style="width: 100%" [(ngModel)]="condition.con_field">
+                  <input nz-input style="width: 100%" [(ngModel)]="condition.con_value" trim="blur" />
+                </nz-form-control>
+              </div>
+
+              <!-- 删除条件按钮 -->
+              <button
+                nz-button
+                (click)="removeCondition(groupIndex, conditionIndex, ifIndex)"
+                style="margin-right: 10px"
+              >
+                <i nz-icon nzType="minus"></i>
+              </button>
+            </div>
+          </nz-card>
+        </div>
+
+        <div style="margin-bottom: 10px">
+          <h3>符合条件出力</h3>
+
+          <!-- 符合条件时类型选择 -->
+          <div nz-row>
+            <nz-form-item style="margin-bottom: 0px; margin-right: 10px" nz-col nzSpan="4">
+              <nz-form-control>
+                <nz-select style="width: 100%" [(ngModel)]="ifCondition.then_type">
+                  <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
+                  <nz-option nzLabel="固定值" nzValue="value"></nz-option>
+                  <nz-option nzLabel="カスタム" nzValue="custom"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <div nz-col nzSpan="4">
+              <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
+              <nz-form-item *ngIf="ifCondition.then_type === 'field'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <nz-select style="width: 100%" [(ngModel)]="ifCondition.then_selected_fieldId">
+                    <nz-option
+                      *ngFor="let item of swkFields"
+                      [nzLabel]="item.field_name | translate"
+                      [nzValue]="item.field_id"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- 当选择为 "固定值" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.then_type === 'value'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <input
+                    nz-input
+                    style="width: 100%"
+                    [(ngModel)]="ifCondition.then_fixed_value"
+                    placeholder="请输入固定值"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <!-- 当选择为 "custom" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.then_type === 'custom'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <nz-select style="width: 100%" [(ngModel)]="ifCondition.customType">
+                    <nz-option nzLabel="加算" nzValue="plus"></nz-option>
+                    <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
+                    <nz-option nzLabel="文字化" nzValue="str"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="4">
+              <!-- 当选择为 "台账字段" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <nz-select style="width: 100%" [(ngModel)]="ifCondition.customType">
+                    <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
+                    <nz-option nzLabel="固定值" nzValue="value"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+              <!-- 当选择为 "台账字段" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <nz-select style="width: 100%">
+                    <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
+                    <nz-option nzLabel="固定值" nzValue="value"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="4">
+              <!-- 当选择为 "台账字段" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <nz-select style="width: 100%">
+                    <nz-option
+                      *ngFor="let item of swkFields"
+                      [nzLabel]="item.field_name | translate"
+                      [nzValue]="item.field_id"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+              <!-- 当选择为 "台账字段" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <nz-select style="width: 100%">
                     <nz-option
                       *ngFor="let item of swkFields"
                       [nzLabel]="item.field_name | translate"
@@ -99,180 +245,57 @@
                 </nz-form-control>
               </nz-form-item>
             </div>
-
-            <!-- 条件运算符 -->
-            <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
-              <nz-form-item style="margin-bottom: 0px">
+          </div>
+        </div>
+        <div>
+          <h3>不符合条件出力</h3>
+          <div nz-row>
+            <nz-form-item style="margin-bottom: 0px; margin-right: 10px" nz-col nzSpan="4">
+              <nz-form-control>
+                <nz-select
+                  style="width: 100%"
+                  [(ngModel)]="ifCondition.else_type"
+                  (ngModelChange)="onElseChange($event, ifIndex)"
+                >
+                  <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
+                  <nz-option nzLabel="固定值" nzValue="value"></nz-option>
+                  <nz-option nzLabel="カスタム" nzValue="custom"></nz-option>
+                  <nz-option nzLabel="条件追加" nzValue="new"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <div nz-col nzSpan="4">
+              <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
+              <nz-form-item *ngIf="ifCondition.else_type === 'field'" style="margin-bottom: 0px; margin-right: 10px">
                 <nz-form-control>
-                  <nz-select style="width: 100%" [(ngModel)]="condition.con_operator">
-                    <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue='{"$eq":["a","b"]}'></nz-option>
+                  <nz-select style="width: 100%" [(ngModel)]="ifCondition.else_selected_fieldId">
                     <nz-option
-                      [nzLabel]="'page.datastore.notEqual' | translate"
-                      nzValue='{"$ne":["a","b"]}'
+                      *ngFor="let item of swkFields"
+                      [nzLabel]="item.field_name | translate"
+                      [nzValue]="item.field_id"
                     ></nz-option>
                   </nz-select>
                 </nz-form-control>
               </nz-form-item>
+
+              <!-- 当选择为 "固定值" 时显示 -->
+              <nz-form-item *ngIf="ifCondition.else_type === 'value'" style="margin-bottom: 0px; margin-right: 10px">
+                <nz-form-control>
+                  <input
+                    nz-input
+                    style="width: 100%"
+                    [(ngModel)]="ifCondition.else_fixed_value"
+                    placeholder="请输入固定值"
+                  />
+                </nz-form-control>
+              </nz-form-item>
             </div>
-
-            <!-- 条件值 -->
-            <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
-              <nz-form-control>
-                <input nz-input style="width: 100%" [(ngModel)]="condition.con_value" trim="blur" />
-              </nz-form-control>
-            </div>
-
-            <!-- 删除条件按钮 -->
-            <button nz-button (click)="removeCondition(groupIndex, conditionIndex, ifIndex)" style="margin-right: 10px">
-              <i nz-icon nzType="minus"></i>
-            </button>
-          </div>
-        </nz-card>
-      </div>
-
-      <div>
-        <h3>符合条件出力内容</h3>
-
-        <!-- 符合条件时类型选择 -->
-        <div nz-row>
-          <nz-form-item style="margin-bottom: 0px" nz-col nzSpan="4">
-            <nz-form-control>
-              <nz-select style="width: 100%" [(ngModel)]="ifCondition.then_type">
-                <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
-                <nz-option nzLabel="固定值" nzValue="value"></nz-option>
-                <nz-option nzLabel="カスタム" nzValue="custom"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-
-          <div nz-col nzSpan="4">
-            <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
-            <nz-form-item *ngIf="ifCondition.then_type === 'field'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%" [(ngModel)]="ifCondition.then_selected_fieldId">
-                  <nz-option
-                    *ngFor="let item of swkFields"
-                    [nzLabel]="item.field_name | translate"
-                    [nzValue]="item.field_id"
-                  ></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-
-            <!-- 当选择为 "固定值" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.then_type === 'value'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <input
-                  nz-input
-                  style="width: 100%"
-                  [(ngModel)]="ifCondition.then_fixed_value"
-                  placeholder="请输入固定值"
-                />
-              </nz-form-control>
-            </nz-form-item>
-            <!-- 当选择为 "custom" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.then_type === 'custom'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%" [(ngModel)]="ifCondition.customType">
-                  <nz-option nzLabel="加算" nzValue="plus"></nz-option>
-                  <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
-                  <nz-option nzLabel="文字化" nzValue="str"></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col nzSpan="4">
-            <!-- 当选择为 "台账字段" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%" [(ngModel)]="ifCondition.customType">
-                  <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
-                  <nz-option nzLabel="固定值" nzValue="value"></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-            <!-- 当选择为 "台账字段" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%">
-                  <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
-                  <nz-option nzLabel="固定值" nzValue="value"></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col nzSpan="4">
-            <!-- 当选择为 "台账字段" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%">
-                  <nz-option
-                    *ngFor="let item of swkFields"
-                    [nzLabel]="item.field_name | translate"
-                    [nzValue]="item.field_id"
-                  ></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-            <!-- 当选择为 "台账字段" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.customType === 'plus'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%">
-                  <nz-option
-                    *ngFor="let item of swkFields"
-                    [nzLabel]="item.field_name | translate"
-                    [nzValue]="item.field_id"
-                  ></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
           </div>
         </div>
-      </div>
-      <div>
-        <h3>不符合条件出力内容</h3>
-        <div nz-row>
-          <nz-form-item style="margin-bottom: 0px" nz-col nzSpan="4">
-            <nz-form-control>
-              <nz-select style="width: 100%" [(ngModel)]="ifCondition.else_type">
-                <nz-option nzLabel="台账字段" nzValue="field"></nz-option>
-                <nz-option nzLabel="固定值" nzValue="value"></nz-option>
-                <nz-option nzLabel="カスタム" nzValue="custom"></nz-option>
-                <nz-option nzLabel="新条件" nzValue="new"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-          <div nz-col nzSpan="4">
-            <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
-            <nz-form-item *ngIf="ifCondition.else_type === 'field'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <nz-select style="width: 100%" [(ngModel)]="ifCondition.else_selected_fieldId">
-                  <nz-option
-                    *ngFor="let item of swkFields"
-                    [nzLabel]="item.field_name | translate"
-                    [nzValue]="item.field_id"
-                  ></nz-option>
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-
-            <!-- 当选择为 "固定值" 时显示 -->
-            <nz-form-item *ngIf="ifCondition.else_type === 'value'" style="margin-bottom: 0px">
-              <nz-form-control>
-                <input
-                  nz-input
-                  style="width: 100%"
-                  [(ngModel)]="ifCondition.else_fixed_value"
-                  placeholder="请输入固定值"
-                />
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-        </div>
-      </div>
-    </nz-collapse-panel>
-  </nz-collapse>
-</div>
-<div>
-  <button nz-button (click)="addIfCondition()" nzType="primary">添加条件</button>
+      </nz-collapse-panel>
+    </nz-collapse>
+  </div>
+  <!-- <div>
+    <button nz-button (click)="addIfCondition()" nzType="primary">条件追加</button>
+  </div> -->
 </div>
