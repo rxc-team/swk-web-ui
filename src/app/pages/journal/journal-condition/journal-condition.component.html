@@ -295,7 +295,14 @@
       </nz-collapse-panel>
     </nz-collapse>
   </div>
-  <!-- <div>
-    <button nz-button (click)="addIfCondition()" nzType="primary">条件追加</button>
-  </div> -->
+  <div>
+    <button
+      nz-button
+      (click)="addIfCondition()"
+      nzType="primary"
+      *ngIf="ifConditions === null || ifConditions.length === 0"
+    >
+      条件追加
+    </button>
+  </div>
 </div>
