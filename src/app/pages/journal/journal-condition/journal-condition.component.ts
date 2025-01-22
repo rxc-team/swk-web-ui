@@ -191,6 +191,11 @@ export class JournalConditionComponent implements OnInit {
 
   // 各级删除条件和添加条件如下
   removeIfCondition(ifIndex: number) {
+    if(ifIndex >= 1) {
+      this.ifConditions[ifIndex - 1].else_type = 'value'
+      this.ifConditions[ifIndex - 1].pre_else_type = 'value'
+      this.ifConditions[ifIndex - 1].else_fixed_value = ''
+    }
     this.ifConditions.splice(ifIndex, 1);
   }
 
