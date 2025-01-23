@@ -82,16 +82,6 @@
                   <i nz-icon nzType="delete"></i>
                   削除
                 </button>
-
-                <!-- 只有不是最后一个组时才显示开关 -->
-                <nz-switch
-                  *ngIf="groupIndex < ifCondition.field_groups.length - 1"
-                  [(ngModel)]="group.switch_type"
-                  [nzCheckedChildren]="'AND'"
-                  [nzUnCheckedChildren]="'OR'"
-                  style="margin-left: 10px"
-                  (ngModelChange)="onSwitchChange($event, groupIndex, ifIndex)"
-                ></nz-switch>
               </span>
             </div>
             <!-- 条件部分 -->
