@@ -82,7 +82,7 @@ export class JournalConditionComponent implements OnInit {
       ],
       condition_name: 'カスタム条件1',
       active: false,
-      collapaseNotice: '詳細を表示するにはクリックしてください',
+      collapaseNotice: '詳細を表示',
       then_value: 'keiyakuno',
       else_value: 'keiyakuno'
     },
@@ -107,7 +107,7 @@ export class JournalConditionComponent implements OnInit {
       ],
       condition_name: 'カスタム条件2',
       active: false,
-      collapaseNotice: '詳細を表示するにはクリックしてください',
+      collapaseNotice: '詳細を表示',
       then_value: 'keiyakuno',
       else_value: 'keiyakuno'
     },
@@ -132,7 +132,7 @@ export class JournalConditionComponent implements OnInit {
       ],
       condition_name: 'カスタム条件3',
       active: false,
-      collapaseNotice: '詳細を表示するにはクリックしてください',
+      collapaseNotice: '詳細を表示',
       then_value: 'keiyakuno',
       else_value: 'keiyakuno'
     }
@@ -160,7 +160,7 @@ export class JournalConditionComponent implements OnInit {
           field_groups: [],
           condition_name: '',
           active: false,
-          collapaseNotice: '詳細を表示するにはクリックしてください',
+          collapaseNotice: '詳細を表示',
           then_value: '',
           else_value: '',
           then_type: '',
@@ -176,7 +176,7 @@ export class JournalConditionComponent implements OnInit {
         field_groups: [],
         condition_name: '',
         active: false,
-        collapaseNotice: '詳細を表示するにはクリックしてください',
+        collapaseNotice: '詳細を表示',
         then_value: '',
         else_value: '',
         then_type: '',
@@ -191,10 +191,10 @@ export class JournalConditionComponent implements OnInit {
 
   // 各级删除条件和添加条件如下
   removeIfCondition(ifIndex: number) {
-    if(ifIndex >= 1 && !(this.ifConditions.length > ifIndex + 1)) {
-      this.ifConditions[ifIndex - 1].else_type = 'value'
-      this.ifConditions[ifIndex - 1].pre_else_type = 'value'
-      this.ifConditions[ifIndex - 1].else_fixed_value = ''
+    if (ifIndex >= 1 && !(this.ifConditions.length > ifIndex + 1)) {
+      this.ifConditions[ifIndex - 1].else_type = 'value';
+      this.ifConditions[ifIndex - 1].pre_else_type = 'value';
+      this.ifConditions[ifIndex - 1].else_fixed_value = '';
     }
     this.ifConditions.splice(ifIndex, 1);
   }
@@ -204,7 +204,12 @@ export class JournalConditionComponent implements OnInit {
   }
 
   addConditionGroup(type: 'and' | 'or', ifIndex: number) {
-    this.ifConditions[ifIndex].field_groups.push({ type, field_cons: [], switch_type: 'and' });
+    if(this.ifConditions[ifIndex].field_groups === null || this.ifConditions[ifIndex].field_groups === undefined || this.ifConditions.length === 0) {
+      this.ifConditions[ifIndex].field_groups = [{ type, field_cons: [], switch_type: 'and' }];
+    } else {
+      this.ifConditions[ifIndex].field_groups.push({ type, field_cons: [], switch_type: 'and' });
+    }
+    
   }
 
   addCondition(groupIndex: number, ifIndex: number) {
@@ -251,9 +256,9 @@ export class JournalConditionComponent implements OnInit {
   // 折叠面板点击触发
   collapaseChange(ifIndex: number) {
     if (this.ifConditions[ifIndex].active) {
-      this.ifConditions[ifIndex].collapaseNotice = '詳細を非表示にするにはクリックしてください';
+      this.ifConditions[ifIndex].collapaseNotice = '詳細を非表示';
     } else {
-      this.ifConditions[ifIndex].collapaseNotice = '詳細を表示するにはクリックしてください';
+      this.ifConditions[ifIndex].collapaseNotice = '詳細を表示';
     }
   }
 

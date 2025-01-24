@@ -246,7 +246,7 @@ export class JournalsettingListComponent implements OnInit {
             if (Array.isArray(field.field_conditions) && field.setting_method === '4') {
               field.field_conditions.forEach(con => {
                 con.active = false;
-                con.collapaseNotice = '詳細を表示するにはクリックしてください';
+                con.collapaseNotice = '詳細を表示';
                 con.pre_else_type = con.else_type;
                 if (con.then_type === 'field') {
                   con.then_selected_fieldId = con.then_value;
@@ -427,7 +427,7 @@ export class JournalsettingListComponent implements OnInit {
     if (this.ifConditions !== null) {
       this.ifConditions.forEach(con => {
         con.active = false;
-        con.collapaseNotice = '詳細を表示するにはクリックしてください';
+        con.collapaseNotice = '詳細を表示';
       });
     }
     // 保存备份
