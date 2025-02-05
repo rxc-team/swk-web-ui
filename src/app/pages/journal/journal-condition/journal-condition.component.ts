@@ -22,17 +22,26 @@ interface Condition {
 interface ConditionGroup {
   type: 'and' | 'or'; // 组内连接符
   field_cons: Condition[]; // 组内的条件
-  switch_type: 'and' | 'or'; // 组与组之间的连接符
+  switch_type?: 'and' | 'or'; // 组与组之间的连接符
+}
+
+interface CostumField {
+  custom_field_type: string;
+  custom_field_value: string;
 }
 
 interface IfCondition {
   field_groups: ConditionGroup[];
+  then_custom_fields?: CostumField[];
+  else_custom_fields?: CostumField[];
   condition_name: string;
   active: boolean;
   collapaseNotice: string;
   then_type?: string;
+  then_custom_type?: string;
+  else_custom_type?: string;
   else_type?: string;
-  pre_else_type?:string;
+  pre_else_type?: string;
   then_selected_fieldId?: string;
   then_fixed_value?: string;
   else_selected_fieldId?: string;
@@ -195,6 +204,8 @@ export class JournalConditionComponent implements OnInit {
       this.ifConditions[ifIndex - 1].else_type = 'value';
       this.ifConditions[ifIndex - 1].pre_else_type = 'value';
       this.ifConditions[ifIndex - 1].else_fixed_value = '';
+      this.ifConditions[ifIndex - 1].else_custom_type = '';
+      this.ifConditions[ifIndex - 1].else_custom_fields = [];
     }
     this.ifConditions.splice(ifIndex, 1);
   }
@@ -204,12 +215,15 @@ export class JournalConditionComponent implements OnInit {
   }
 
   addConditionGroup(type: 'and' | 'or', ifIndex: number) {
-    if(this.ifConditions[ifIndex].field_groups === null || this.ifConditions[ifIndex].field_groups === undefined || this.ifConditions.length === 0) {
+    if (
+      this.ifConditions[ifIndex].field_groups === null ||
+      this.ifConditions[ifIndex].field_groups === undefined ||
+      this.ifConditions.length === 0
+    ) {
       this.ifConditions[ifIndex].field_groups = [{ type, field_cons: [], switch_type: 'and' }];
     } else {
       this.ifConditions[ifIndex].field_groups.push({ type, field_cons: [], switch_type: 'and' });
     }
-    
   }
 
   addCondition(groupIndex: number, ifIndex: number) {
@@ -225,15 +239,43 @@ export class JournalConditionComponent implements OnInit {
   }
 
   // AND/OR 切换处理
-  onSwitchChange(value: boolean, groupIndex: number, ifIndex: number) {
-    // 当开关切换时，bool转string
-    this.ifConditions[ifIndex].field_groups[groupIndex].switch_type = value || 'or' ? 'and' : 'or';
+  // onSwitchChange(value: boolean, groupIndex: number, ifIndex: number) {
+  //   // 当开关切换时，bool转string
+  //   this.ifConditions[ifIndex].field_groups[groupIndex].switch_type = value || 'or' ? 'and' : 'or';
+  // }
+
+  // Then结果类型切换时初始化自定义字段
+  onThenTypeChange(value: string, ifIndex: number) {
+    this.ifConditions[ifIndex].then_custom_type = '';
+    this.ifConditions[ifIndex].then_custom_fields = [];
   }
 
-  // Else类型选择处理
-  onElseChange(value: string, ifIndex: number) {
+  // Then函数类型切换处理
+  onThenCustomTypeChange(value: string, ifIndex: number) {
+    this.ifConditions[ifIndex].then_custom_fields = [
+      {
+        custom_field_type: 'field',
+        custom_field_value: ''
+      }
+    ];
+  }
+
+  // Else函数类型切换处理
+  onElseCustomTypeChange(value: string, ifIndex: number) {
+    this.ifConditions[ifIndex].else_custom_fields = [
+      {
+        custom_field_type: 'field',
+        custom_field_value: ''
+      }
+    ];
+  }
+
+  // Else函数结果切换处理
+  onElseTypeChange(value: string, ifIndex: number) {
     this.ifConditions[ifIndex].else_fixed_value = '';
     this.ifConditions[ifIndex].else_selected_fieldId = '';
+    this.ifConditions[ifIndex].else_custom_type = '';
+    this.ifConditions[ifIndex].else_custom_fields = [];
     if (value === 'new' && !(this.ifConditions.length > ifIndex + 1)) {
       this.addIfCondition();
       this.ifConditions[ifIndex].pre_else_type = value;
@@ -250,7 +292,42 @@ export class JournalConditionComponent implements OnInit {
           this.ifConditions[ifIndex].pre_else_type = 'new';
         }
       });
-    } 
+    }
+  }
+
+  // 添加自定义Then字段
+  addThenField(ifIndex: number) {
+    this.ifConditions[ifIndex].then_custom_fields.push({
+      custom_field_type: 'field',
+      custom_field_value: ''
+    });
+  }
+
+  // 删除自定义Then字段
+  removeThenField(ifIndex: number, fieldIndex: number) {
+    this.ifConditions[ifIndex].then_custom_fields.splice(fieldIndex, 1);
+  }
+
+  // 添加自定义Else字段
+  addElseField(ifIndex: number) {
+    this.ifConditions[ifIndex].else_custom_fields.push({
+      custom_field_type: 'field',
+      custom_field_value: ''
+    });
+  }
+  // 删除自定义Else字段
+  removeElseField(ifIndex: number, fieldIndex: number) {
+    this.ifConditions[ifIndex].else_custom_fields.splice(fieldIndex, 1);
+  }
+
+  // 自定义函数字段类型切换处理
+  onThenCustomFieldTypeChange(value: string, ifIndex: number, fieldIndex: number) {
+    this.ifConditions[ifIndex].then_custom_fields[fieldIndex].custom_field_value = '';
+  }
+
+  // 自定义函数字段类型切换处理
+  onElseCustomFieldTypeChange(value: string, ifIndex: number, fieldIndex: number) {
+    this.ifConditions[ifIndex].else_custom_fields[fieldIndex].custom_field_value = '';
   }
 
   // 折叠面板点击触发

@@ -287,9 +287,6 @@
                     </nz-option>
                   </nz-select>
                 </ng-container>
-                <!-- <ng-container *ngIf="item.setting_method === '4'">
-                  <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">条件追加</button>
-                </ng-container> -->
                 <ng-container *ngIf="item.setting_method === '4'">
                   <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">
                     カスタム条件追加
@@ -386,7 +383,8 @@
   [nzWidth]="1000"
   (nzOnCancel)="closeJsonEditor()"
   (nzOnOk)="handleOK()"
-  [nzStyle]="{ height: '750px', overflow: 'auto' }"
+  [nzStyle]="{ height: '750px', marginTop: '-30px' }"
+  [nzMaskClosable]="false"
 >
   <ng-template nzModalContent>
     <app-journal-condition [ifConditions]="ifConditions" [datastoreId]="swk_datastore_Id"></app-journal-condition>

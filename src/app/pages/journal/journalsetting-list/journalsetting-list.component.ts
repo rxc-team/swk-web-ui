@@ -421,7 +421,9 @@ export class JournalsettingListComponent implements OnInit {
   // 打开弹窗
   openJsonEditor(item: any): void {
     item.field_type = 'function';
-    item.field_id = this.generateRandomFieldId();
+    if (item.field_id === null || item.field_id === undefined || item.field_id === '') {
+      item.field_id = this.generateRandomFieldId();
+    }
     // 条件列表传递到modal组件
     this.ifConditions = item.field_conditions;
     if (this.ifConditions !== null) {
@@ -450,22 +452,27 @@ export class JournalsettingListComponent implements OnInit {
   handleOK() {
     // 从modal子组件中获得条件列表
     const ifConditions = this.childComponent.ifConditions;
-    // 根据选择的类型，保存值
-    ifConditions.forEach(con => {
-      if (con.then_type === 'field') {
-        con.then_value = con.then_selected_fieldId;
-      } else if (con.then_type === 'value') {
-        con.then_value = con.then_fixed_value;
-      }
-      if (con.else_type === 'field') {
-        con.else_value = con.else_selected_fieldId;
-      } else if (con.else_type === 'value') {
-        con.else_value = con.else_fixed_value;
-      }
-    });
     //更新到选中的条目
     const updatedItem = this.selectedFields.find(field => field.field_id === this.fieldId);
     if (updatedItem) {
+      ifConditions.forEach((con, index) => {
+        // 根据选择的类型，保存值
+        if (con.then_type === 'field') {
+          con.then_value = con.then_selected_fieldId;
+        } else if (con.then_type === 'value') {
+          con.then_value = con.then_fixed_value;
+        }
+        if (con.else_type === 'field') {
+          con.else_value = con.else_selected_fieldId;
+        } else if (con.else_type === 'value') {
+          con.else_value = con.else_fixed_value;
+        }
+        // 将最后一项的else值和类型提出到外层
+        if (index === ifConditions.length - 1) {
+          updatedItem.else_type = con.else_type;
+          updatedItem.else_value = con.else_value;
+        }
+      });
       updatedItem.field_conditions = ifConditions;
     }
 
