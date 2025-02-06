@@ -14,9 +14,10 @@ import { FuncParamComponent } from './func-param/func-param.component';
 import { FuncGenComponent } from './func-gen/func-gen.component';
 import { JournalConditionComponent } from './journal-condition/journal-condition.component';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
+import { JournalsettingTemplateComponent } from './journalsetting-template/journalsetting-template.component';
 
 @NgModule({
-  declarations: [SubjectListComponent, JournalListComponent, JournalsettingListComponent, JournalConfimComponent, JournalSendComponent, FuncEditorComponent, FuncParamComponent, FuncGenComponent, JournalConditionComponent],
+  declarations: [SubjectListComponent, JournalListComponent, JournalsettingListComponent, JournalConfimComponent, JournalSendComponent, FuncEditorComponent, FuncParamComponent, FuncGenComponent, JournalConditionComponent, JournalsettingTemplateComponent],
   imports: [SharedModule, JournalRoutingModule, DragDropModule, NzCollapseModule],
 })
 export class JournalModule {}

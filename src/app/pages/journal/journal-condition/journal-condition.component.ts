@@ -1,14 +1,11 @@
-import { editor } from 'monaco-editor';
-import { NgEventBus } from 'ng-event-bus';
-import { NzConfigService } from 'ng-zorro-antd/core/config';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
-import { FormBuilder, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, ViewChild, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FieldService, JournalService } from '@api';
 import { I18NService, TokenStorageService } from '@core';
+import { JournalsettingTemplateComponent } from '../journalsetting-template/journalsetting-template.component';
 
 import _ from 'lodash';
 
@@ -58,15 +55,22 @@ interface IfCondition {
   providers: []
 })
 export class JournalConditionComponent implements OnInit {
+  @ViewChild(JournalsettingTemplateComponent) childComponent: JournalsettingTemplateComponent;
   @Input() datastoreId: string;
   @Input() ifConditions: IfCondition[] = [];
 
-  constructor(private ms: NzModalService, private fs: FieldService) {}
+  constructor(private ms: NzModalService, private fs: FieldService, private message: NzMessageService, private i18n: I18NService) {}
 
   // 加载中标识符
   isLoading = true;
   // 可选台账字段
   swkFields: any[] = [];
+  // 模板窗口可视标识
+  isTemplateModalVisible = false;
+  // 选中的条件编号
+  selectedIfIndex: number;
+  // 模板保存窗口可视标识
+  isSaveTemplateModalVisible = false;
 
   //临时模板数据 模板功能TODO
   tempIfConditions: IfCondition[] = [
@@ -168,8 +172,8 @@ export class JournalConditionComponent implements OnInit {
         {
           field_groups: [],
           condition_name: '',
-          active: false,
-          collapaseNotice: '詳細を表示',
+          active: true,
+          collapaseNotice: '詳細を非表示',
           then_value: '',
           else_value: '',
           then_type: '',
@@ -184,8 +188,8 @@ export class JournalConditionComponent implements OnInit {
       this.ifConditions.push({
         field_groups: [],
         condition_name: '',
-        active: false,
-        collapaseNotice: '詳細を表示',
+        active: true,
+        collapaseNotice: '詳細を非表示',
         then_value: '',
         else_value: '',
         then_type: '',
@@ -361,5 +365,41 @@ export class JournalConditionComponent implements OnInit {
   }
 
   // 保存模板 TODO
-  saveCondition(ifCondition: IfCondition) {}
+  saveCondition(ifCondition?: IfCondition) {
+    this.message.success('保存しました');
+  }
+
+  // 打开模板modal框
+  openTemplateModal(ifIndex: number) {
+    this.isTemplateModalVisible = true;
+    this.selectedIfIndex = ifIndex;
+  }
+
+  // 关闭模板modal框
+  closeTemplateModal() {
+    this.isTemplateModalVisible = false;
+  }
+
+  // 模板modal框OK按钮
+  handleTemplateModalOK() {
+    this.ifConditions[this.selectedIfIndex] = this.childComponent.selectedTemplate;
+    this.ifConditions[this.selectedIfIndex].active = true;
+    this.isTemplateModalVisible = false;
+  }
+
+  // 打开模板保存modal框
+  openSaveTemplateModal() {
+    this.isSaveTemplateModalVisible = true;
+  }
+
+  // 关闭模板保存modal框
+  closeSaveTemplateModal() {
+    this.isSaveTemplateModalVisible = false;
+  }
+
+  // 模板保存modal框OK按钮
+  handleSaveTemplateModalOK() {
+    this.saveCondition();
+    this.isSaveTemplateModalVisible = false;
+  }
 }

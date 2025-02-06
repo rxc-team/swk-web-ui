@@ -235,7 +235,6 @@
                   <nz-option nzValue="1" nzLabel="固定值"></nz-option>
                   <nz-option nzValue="2" nzLabel="仕訳台帳"></nz-option>
                   <nz-option nzValue="3" nzLabel="増減履歴台帳"></nz-option>
-                  <!-- <nz-option nzValue="4" nzLabel="カスタマイズ"></nz-option> -->
                   <nz-option nzValue="4" nzLabel="カスタマイズ"></nz-option>
                 </nz-select>
               </td>
@@ -289,7 +288,11 @@
                 </ng-container>
                 <ng-container *ngIf="item.setting_method === '4'">
                   <button nz-button nzType="default" nzSize="small" (click)="openJsonEditor(item)">
-                    カスタム条件追加
+                    {{
+                      item.field_conditions && item.field_conditions.length !== 0
+                        ? '追加された条件の数：' + item.field_conditions.length
+                        : 'カスタム条件追加'
+                    }}
                   </button>
                 </ng-container>
               </td>
@@ -376,7 +379,7 @@
   </nz-tabset>
 </form>
 
-<!-- JSON 编辑弹窗 -->
+<!-- カスタム出力条件弹窗 -->
 <nz-modal
   [(nzVisible)]="isJsonEditorVisible"
   nzTitle="カスタム出力条件"

@@ -1,0 +1,19 @@
+<div style="height: 500px; overflow: auto; padding: 2px" class="solid_border">
+  <ul nz-menu nzMode="inline">
+    <ng-container *ngFor="let item of tempIfConditions; let tIndex = index">
+      <li
+        nz-menu-item
+        (click)="selectedTemplate = item"
+        class="solid_border"
+        style="display: flex; justify-content: space-between; align-items: center"
+        [nzSelected]="tIndex === 0"
+      >
+        {{ item.condition_name }}
+        <button nz-button nzDanger  (click)="removeTemplate(tIndex)">
+          <i nz-icon nzType="delete"></i>
+          削除
+        </button>
+      </li>
+    </ng-container>
+  </ul>
+</div>

@@ -4,9 +4,9 @@
 <div *ngIf="!isLoading">
   <div *ngFor="let ifCondition of ifConditions; let ifIndex = index">
     <!-- 条件运算符 -->
-    <div nz-row>
-      <nz-tag nzColor="#108ee9" style="margin-right: 10px; margin-bottom: 10px">条件No.{{ ifIndex + 1 }}</nz-tag>
-      <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px">
+    <div nz-row style="margin-right: 10px; margin-bottom: 10px">
+      <nz-tag nzColor="#108ee9" style="margin-right: 10px">条件No.{{ ifIndex + 1 }}</nz-tag>
+      <!-- <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px">
         <nz-form-item style="margin-bottom: 0px">
           <nz-form-control>
             <nz-select
@@ -25,7 +25,7 @@
             </nz-select>
           </nz-form-control>
         </nz-form-item>
-      </div>
+      </div> -->
       <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px" *ngIf="ifCondition.shinki_flag">
         <nz-form-item style="margin-bottom: 0px">
           <nz-form-control>
@@ -33,9 +33,11 @@
           </nz-form-control>
         </nz-form-item>
       </div>
-      <div nz-col nzSpan="6">
-        <button nz-button (click)="saveCondition(ifCondition)" nzType="primary" style="margin-right: 10px">保存</button>
-        <button nz-button (click)="removeIfCondition(ifIndex)" nzType="primary" nzDanger>削除</button>
+      <div nz-col nzSpan="8">
+        <button nz-button (click)="openTemplateModal(ifIndex)" nzType="primary" style="margin-right: 10px">
+          テンプレートを選択
+        </button>
+        <button nz-button (click)="removeIfCondition(ifIndex)" nzType="primary" nzDanger>条件を削除</button>
       </div>
     </div>
     <nz-collapse style="margin-right: 10px; margin-bottom: 30px">
@@ -75,7 +77,7 @@
                   nzDanger
                 >
                   <i nz-icon nzType="delete"></i>
-                  削除
+                  グループを削除
                 </button>
               </span>
             </div>
@@ -320,7 +322,7 @@
               </nz-form-item>
             </div>
           </div>
-          <nz-card>
+          <nz-card style="margin-bottom: 10px">
             <div nz-row *ngFor="let field of ifCondition.else_custom_fields; let fieldIndex = index">
               <div nz-col nzSpan="4" nzOffset="9">
                 <!-- 当选择为 "加算" 时显示 -->
@@ -397,6 +399,13 @@
               </div>
             </div>
           </nz-card>
+          <nz-form-item>
+            <div style="text-align: right; width: 100%">
+              <button nz-button (click)="openSaveTemplateModal(ifCondition)" nzType="primary">
+                条件をテンプレートとして保存
+              </button>
+            </div>
+          </nz-form-item>
         </div>
       </nz-collapse-panel>
     </nz-collapse>
@@ -412,3 +421,37 @@
     </button>
   </div>
 </div>
+<!-- テンプレート選択弹窗 -->
+<nz-modal
+  [(nzVisible)]="isTemplateModalVisible"
+  nzTitle="テンプレートを選択"
+  [nzWidth]="700"
+  (nzOnCancel)="closeTemplateModal()"
+  (nzOnOk)="handleTemplateModalOK()"
+  [nzStyle]="{ height: '750px', marginTop: '-30px' }"
+  [nzMaskClosable]="false"
+>
+  <ng-template nzModalContent>
+    <app-journalsetting-template></app-journalsetting-template>
+  </ng-template>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="isSaveTemplateModalVisible"
+  nzTitle="テンプレートを保存"
+  (nzOnCancel)="closeSaveTemplateModal()"
+  (nzOnOk)="handleSaveTemplateModalOK()"
+  [nzStyle]="{ height: '750px', marginTop: '-30px' }"
+  [nzMaskClosable]="false"
+>
+  <ng-template nzModalContent>
+    <div>
+      <nz-form-item [ngStyle]="{ padding: '0px' }">
+        <nz-form-label [nzSpan]="5">テンプレート名</nz-form-label>
+        <nz-form-control>
+          <input nz-input [ngStyle]="{ width: isSmall ? '220px' : '300px' }" placeholder="" trim="blur" />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </ng-template>
+</nz-modal>
