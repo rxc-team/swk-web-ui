@@ -8,3 +8,36 @@
     }
   }
 });
+
+/* 标题 */
+::ng-deep .ant-modal-header {
+  position: sticky; /* 标题固定 */
+  top: 0;
+  background-color: white; /* 背景不透明 */
+  z-index: 1050; /* 调整Z向层级 */
+}
+
+/* 右上关闭按钮 */
+::ng-deep .ant-modal-close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 1060; /* 调整Z向层级 */
+}
+
+/* 底部按钮 */
+::ng-deep .ant-modal-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: white; /* 背景不透明 */
+  z-index: 1050; /* 调整Z向层级 */
+}
+
+::ng-deep .ant-modal-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto; /* 启用垂直滚动 */
+}
+
+.modal-body-content {
+  padding-bottom: 50px; /* 避免底部按钮被内容遮挡 */
+}
