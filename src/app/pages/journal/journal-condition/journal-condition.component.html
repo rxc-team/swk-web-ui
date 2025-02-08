@@ -211,21 +211,36 @@
                 </nz-form-item>
               </div>
               <div nz-col nzSpan="4">
-                <!-- 当选择为 "加算" 且 "台账字段" 时显示 -->
+                <!-- 当选择为 "算术运算" 且 "台账字段" 时显示 -->
                 <nz-form-item
-                  *ngIf="ifCondition.then_custom_type !== '' && field.custom_field_type === 'field'"
+                  *ngIf="ifCondition.then_custom_type === 'plus' && field.custom_field_type === 'field'"
                   style="margin-bottom: 10px; margin-right: 10px"
                 >
                   <nz-form-control>
                     <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
                       <nz-option
-                        *ngFor="let item of swkFields"
+                        *ngFor="let item of numberSwkFields "
                         [nzLabel]="item.field_name | translate"
                         [nzValue]="item.field_id"
                       ></nz-option>
                     </nz-select>
                   </nz-form-control>
                 </nz-form-item>
+                <!-- 当选择为 "非算术运算" 且 "台账字段" 时显示 -->
+                <nz-form-item
+                *ngIf="ifCondition.then_custom_type !== '' && ifCondition.then_custom_type !== 'plus' && field.custom_field_type === 'field'"
+                style="margin-bottom: 10px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
+                    <nz-option
+                      *ngFor="let item of strAndNumberSwkFields "
+                      [nzLabel]="item.field_name | translate"
+                      [nzValue]="item.field_id"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
                 <!-- 当选择为 "加算" 且 "固定值" 时显示 -->
                 <nz-form-item
                   *ngIf="ifCondition.then_custom_type !== '' && field.custom_field_type === 'value'"
@@ -316,7 +331,7 @@
                   >
                     <nz-option nzLabel="加算" nzValue="plus"></nz-option>
                     <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
-                    <nz-option nzLabel="文字化" nzValue="str"></nz-option>
+                    <!-- <nz-option nzLabel="文字化" nzValue="str"></nz-option> -->
                   </nz-select>
                 </nz-form-control>
               </nz-form-item>
@@ -343,15 +358,30 @@
                 </nz-form-item>
               </div>
               <div nz-col nzSpan="4">
-                <!-- 当选择为 "加算" 且 "台账字段" 时显示 -->
+                <!-- 当选择为 "算术运算" 且 "台账字段" 时显示 -->
                 <nz-form-item
-                  *ngIf="ifCondition.else_custom_type !== '' && field.custom_field_type === 'field'"
+                  *ngIf="ifCondition.else_custom_type === 'plus' && field.custom_field_type === 'field'"
                   style="margin-bottom: 10px; margin-right: 10px"
                 >
                   <nz-form-control>
                     <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
                       <nz-option
-                        *ngFor="let item of swkFields"
+                        *ngFor="let item of numberSwkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+                <!-- 当选择为 "非算术运算" 且 "台账字段" 时显示 -->
+                <nz-form-item
+                  *ngIf="ifCondition.else_custom_type !== '' && ifCondition.else_custom_type !== 'plus' && field.custom_field_type === 'field'"
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
+                      <nz-option
+                        *ngFor="let item of strAndNumberSwkFields"
                         [nzLabel]="item.field_name | translate"
                         [nzValue]="item.field_id"
                       ></nz-option>

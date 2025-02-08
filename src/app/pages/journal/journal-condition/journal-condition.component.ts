@@ -65,6 +65,8 @@ export class JournalConditionComponent implements OnInit {
   isLoading = true;
   // 可选台账字段
   swkFields: any[] = [];
+  numberSwkFields: any[] = [];
+  strAndNumberSwkFields: any[] = [];
   // 模板窗口可视标识
   isTemplateModalVisible = false;
   // 选中的条件编号
@@ -161,6 +163,8 @@ export class JournalConditionComponent implements OnInit {
         this.swkFields = [];
       }
       this.swkFields = _.sortBy(this.swkFields, 'display_order');
+      this.numberSwkFields = this.swkFields.filter(f => f.field_type === 'number')
+      this.strAndNumberSwkFields = this.swkFields.filter(f => f.field_type === 'number' || f.field_type === 'text')
       this.isLoading = false;
     });
   }
