@@ -37,7 +37,8 @@ export class JournalsettingListComponent implements OnInit {
       numberItems: [0, [Validators.required]],
       validFlag: ['', [Validators.required]],
       handleMonth: [this.handleMonth],
-      confimMethod: ['sabun']
+      confimMethod: ['sabun'],
+      journalStructure: ['primary']
     });
   }
 
@@ -116,6 +117,11 @@ export class JournalsettingListComponent implements OnInit {
   fieldId: '';
   api_key: string;
   jsonContent = '';
+  isModalVisible = false; // 控制Modal的显示与隐藏
+  SelectJournals: any[] = [];
+  SelectedJournals: any[] = [];
+  isOpen = {};
+  journalStructure = '';
 
   ngOnInit(): void {
     this.init();
@@ -156,12 +162,18 @@ export class JournalsettingListComponent implements OnInit {
       if (res && res.confim_method) {
         this.form.controls.confimMethod.setValue(res.confim_method);
       }
+      if (res && res.journal_structure) {
+        this.journalStructure = res.journal_structure;
+        this.form.controls.journalStructure.setValue(res.journal_structure);
+      }
     });
     this.form.patchValue({ handleMonth: this.handleMonth });
 
-    this.js.getJournals().then((data: any[]) => {
+    this.js.getSelectJournals().then((data: any[]) => {
       if (data) {
+        this.SelectedJournals = data;
         this.journals = this.buildData(data);
+        console.log(this.journals);
       } else {
         this.journals = [];
       }
@@ -212,7 +224,8 @@ export class JournalsettingListComponent implements OnInit {
       app_id: this.appId,
       handleMonth: format(new Date(this.form.value.handleMonth), 'yyyy-MM'),
       swk_control: this.swkControl,
-      confim_method: this.form.controls.confimMethod.value
+      confim_method: this.form.controls.confimMethod.value,
+      journal_structure: this.form.controls.journalStructure.value
     };
     this.appService.modifySwkSetting(this.appId, params);
     this.message.success(this.i18n.translateLang('common.message.success.S_002'));
@@ -222,34 +235,93 @@ export class JournalsettingListComponent implements OnInit {
   buildData(data: any[]) {
     const dataList = [];
     let line = 1;
-    data.forEach((journal, i) => {
-      const patterns: any[] = journal.patterns;
-      patterns.forEach((pattern, j) => {
-        const subjects: any[] = pattern.subjects;
-        dataList.push({
-          no: line,
-          name: pattern.pattern_name,
-          debt: '',
-          credit: '',
-          amount: '',
-          other: ''
+    if (this.journalStructure == 'primary') {
+      data.forEach((journal, i) => {
+        const patterns: any[] = journal.patterns;
+        patterns.forEach((pattern, j) => {
+          if (pattern.journal_type == 'primary') {
+            const subjects: any[] = pattern.subjects;
+            dataList.push({
+              no: line,
+              name: pattern.pattern_name,
+              debt: '',
+              credit: '',
+              amount: '',
+              other: ''
+            });
+            subjects.forEach((subject, k) => {
+              dataList.push({
+                no: '',
+                name: `${line}-${k + 1}`,
+                debt: subject.lending_division === '2' ? subject.default_name : '',
+                credit: subject.lending_division === '1' ? subject.default_name : '',
+                amount: subject.amount_name,
+                other: ''
+              });
+            });
+            line++;
+          }
         });
-        subjects.forEach((subject, k) => {
-          dataList.push({
-            no: '',
-            name: `${line}-${k + 1}`,
-            debt: subject.lending_division === '2' ? subject.default_name : '',
-            credit: subject.lending_division === '1' ? subject.default_name : '',
-            amount: subject.amount_name,
-            other: ''
-          });
-        });
-        line++;
       });
-    });
+    } else {
+      data.forEach((journal, i) => {
+        const patterns: any[] = journal.patterns;
+        patterns.forEach((pattern, j) => {
+          if (pattern.journal_type == 'single') {
+            const subjects: any[] = pattern.subjects;
+            dataList.push({
+              no: line,
+              name: pattern.pattern_name,
+              debt: '',
+              credit: '',
+              amount: '',
+              other: ''
+            });
+            // 用于合并行
+            let mergedRow = null; 
+            let index = 1;
+            subjects.forEach((subject, k) => {
+              const isLendingDivision1 = subject.lending_division === '1';
+              const isLendingDivision2 = subject.lending_division === '2';
+
+              if (isLendingDivision1 || isLendingDivision2) {
+                // 如果没有合并行，则创建新的合并行
+                if (!mergedRow) {
+                  mergedRow = {
+                    no: '', 
+                    name: `${line}-${index}`, 
+                    debt: isLendingDivision2 ? subject.default_name : '',
+                    credit: isLendingDivision1 ? subject.default_name : '',
+                    amount: subject.amount_name,
+                    other: ''
+                  };
+                } else {
+                  // 如果是同一行的内容，合并 'debt' 和 'credit'
+                  if (isLendingDivision2) {
+                    mergedRow.debt = subject.default_name; 
+                  }
+                  if (isLendingDivision1) {
+                    mergedRow.credit = subject.default_name; 
+                  }
+                  index++;
+                }
+              }
+
+              // 当两个lending_division的数据都处理完时，将合并行push到dataList
+              if (mergedRow && ((isLendingDivision1 && mergedRow.debt) || (isLendingDivision2 && mergedRow.credit))) {
+                dataList.push(mergedRow);
+                // 重置mergedRow，准备处理下一个合并行
+                mergedRow = null; 
+              }
+            });
+            line++;
+          }
+        });
+      });
+    }
+
     return dataList;
   }
-
   addSetting() {
     this.selectedFields.forEach((item, index) => {
       if (!item.download_name) {
@@ -326,7 +398,7 @@ export class JournalsettingListComponent implements OnInit {
   openJsonEditor(item: any): void {
     item.field_type = 'function';
     item.field_id = this.generateRandomFieldId();
-    this.jsonContent=item.edit_content
+    this.jsonContent = item.edit_content;
     this.fieldId = item.field_id;
     this.isJsonEditorVisible = true;
   }
@@ -338,7 +410,7 @@ export class JournalsettingListComponent implements OnInit {
 
   // 保存 JSON 内容
   saveJson(): void {
-     try {
+    try {
       //解析JSON确保格式正确
       JSON.parse(this.jsonContent);
       // 找到对应item并更新 edit_content
@@ -349,7 +421,7 @@ export class JournalsettingListComponent implements OnInit {
       this.closeJsonEditor();
     } catch (e) {
       this.message.error('間違ったJSON形式、チェックしてください');
-    } 
+    }
   }
 
   // 随机生成唯一的 field_id
@@ -360,5 +432,58 @@ export class JournalsettingListComponent implements OnInit {
   // 当子组件的 JSON 内容发生变化时，更新父组件的 jsonContent
   onJsonContentChange(newJsonContent: string) {
     this.jsonContent = newJsonContent;
+  }
+
+  // 打开弹窗
+  openModal(): void {
+    this.js.getJournals().then((data: any[]) => {
+      if (data) {
+        this.SelectJournals = data;
+        // 设置勾选状态
+        this.SelectJournals.forEach(journal => {
+          // 如果SelectedJournals中存在已选择的journal_id，则将 selected 设置为 true
+          journal.selected = this.SelectedJournals.some(selectJournal => selectJournal.journal_id === journal.journal_id);
+        });
+      } else {
+        this.journals = [];
+        this.SelectJournals = [];
+      }
+    });
+    this.isModalVisible = true;
+  }
+
+  // 关闭弹窗
+  closeModal(): void {
+    this.isModalVisible = false;
+  }
+
+  applySelection(): void {
+     // 过滤出选中的 journal
+    const selectedJournalIds = this.SelectJournals.filter(journal => journal.selected)
+      .map(journal => journal.journal_id);
+
+    // 根据 selectedJournalIds 过滤 SelectJournals
+    this.SelectJournals = this.SelectJournals.filter(journal => selectedJournalIds.includes(journal.journal_id));
+    const params = {
+      selected_journal: selectedJournalIds
+    };
+    if (selectedJournalIds.length > 0) {
+      this.js.addSelectJournals(params).then(() => {
+        this.message.success(this.i18n.translateLang('common.message.success.S_001'));
+      });
+    }
+
+    this.init();
+    this.isModalVisible = false;
+  }
+
+  // 切换子项显示状态
+  toggleChildren(data: any) {
+    data.expanded = !data.expanded;
+  }
+
+  // 获取某个journal的所有内容
+  getChildren(parentNo: number) {
+    return this.journals.filter(item => item.no === '' && item.name.startsWith(parentNo.toString()));
   }
 }
