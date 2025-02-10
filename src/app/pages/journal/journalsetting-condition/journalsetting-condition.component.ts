@@ -2,9 +2,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { Component, ViewChild, Input, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { FieldService, JournalService } from '@api';
-import { I18NService, TokenStorageService } from '@core';
+import { FieldService } from '@api';
+import { I18NService } from '@core';
 import { JournalsettingTemplateComponent } from '../journalsetting-template/journalsetting-template.component';
 
 import _ from 'lodash';
@@ -14,6 +13,7 @@ interface Condition {
   con_field: string;
   con_operator: string;
   con_value: string;
+  con_data_type: string;
 }
 
 interface ConditionGroup {
@@ -25,6 +25,7 @@ interface ConditionGroup {
 interface CostumField {
   custom_field_type: string;
   custom_field_value: string;
+  custom_field_data_type: string;
 }
 
 interface IfCondition {
@@ -45,16 +46,18 @@ interface IfCondition {
   else_fixed_value?: string;
   then_value: string;
   else_value: string;
+  then_value_data_type: string;
+  else_value_data_type: string;
   shinki_flag?: boolean;
 }
 
 @Component({
-  selector: 'app-journal-condition',
-  templateUrl: './journal-condition.component.html',
-  styleUrls: ['./journal-condition.component.less'],
+  selector: 'app-journalsetting-condition',
+  templateUrl: './journalsetting-condition.component.html',
+  styleUrls: ['./journalsetting-condition.component.less'],
   providers: []
 })
-export class JournalConditionComponent implements OnInit {
+export class JournalsettingConditionComponent implements OnInit {
   @ViewChild(JournalsettingTemplateComponent) childComponent: JournalsettingTemplateComponent;
   @Input() datastoreId: string;
   @Input() ifConditions: IfCondition[] = [];
@@ -74,85 +77,6 @@ export class JournalConditionComponent implements OnInit {
   // 模板保存窗口可视标识
   isSaveTemplateModalVisible = false;
 
-  //临时模板数据 模板功能TODO
-  tempIfConditions: IfCondition[] = [
-    {
-      field_groups: [
-        {
-          type: 'and',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: '{"$eq":["a","b"]}', con_value: '111' },
-            { con_field: 'shiwakeno', con_operator: '{"$ne":["a","b"]}', con_value: '111' }
-          ],
-          switch_type: 'or'
-        },
-        {
-          type: 'or',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: '{"$eq":["a","b"]}', con_value: '111' },
-            { con_field: 'shiwakeno', con_operator: '{"$ne":["a","b"]}', con_value: '111' }
-          ],
-          switch_type: 'and'
-        }
-      ],
-      condition_name: 'カスタム条件1',
-      active: false,
-      collapaseNotice: '詳細を表示',
-      then_value: 'keiyakuno',
-      else_value: 'keiyakuno'
-    },
-    {
-      field_groups: [
-        {
-          type: 'and',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: '{"$eq":["a","b"]}', con_value: '222' },
-            { con_field: 'shiwakeno', con_operator: '{"$ne":["a","b"]}', con_value: '222' }
-          ],
-          switch_type: 'or'
-        },
-        {
-          type: 'or',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: '{"$eq":["a","b"]}', con_value: '222' },
-            { con_field: 'shiwakeno', con_operator: '{"$ne":["a","b"]}', con_value: '222' }
-          ],
-          switch_type: 'and'
-        }
-      ],
-      condition_name: 'カスタム条件2',
-      active: false,
-      collapaseNotice: '詳細を表示',
-      then_value: 'keiyakuno',
-      else_value: 'keiyakuno'
-    },
-    {
-      field_groups: [
-        {
-          type: 'and',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: '{"$eq":["a","b"]}', con_value: '333' },
-            { con_field: 'shiwakeno', con_operator: '{"$ne":["a","b"]}', con_value: '333' }
-          ],
-          switch_type: 'or'
-        },
-        {
-          type: 'or',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: '{"$eq":["a","b"]}', con_value: '333' },
-            { con_field: 'shiwakeno', con_operator: '{"$ne":["a","b"]}', con_value: '333' }
-          ],
-          switch_type: 'and'
-        }
-      ],
-      condition_name: 'カスタム条件3',
-      active: false,
-      collapaseNotice: '詳細を表示',
-      then_value: 'keiyakuno',
-      else_value: 'keiyakuno'
-    }
-  ];
-
   ngOnInit() {
     // modal框内查询可选字段
     this.fs.getFields(this.datastoreId).then((data: any[]) => {
@@ -163,8 +87,9 @@ export class JournalConditionComponent implements OnInit {
         this.swkFields = [];
       }
       this.swkFields = _.sortBy(this.swkFields, 'display_order');
-      this.numberSwkFields = this.swkFields.filter(f => f.field_type === 'number')
-      this.strAndNumberSwkFields = this.swkFields.filter(f => f.field_type === 'number' || f.field_type === 'text')
+      // swk字段类型筛选
+      this.numberSwkFields = this.swkFields.filter(f => f.field_type === 'number');
+      this.strAndNumberSwkFields = this.swkFields.filter(f => f.field_type === 'number' || f.field_type === 'text');
       this.isLoading = false;
     });
   }
@@ -185,7 +110,9 @@ export class JournalConditionComponent implements OnInit {
           then_selected_fieldId: '',
           then_fixed_value: '',
           else_selected_fieldId: '',
-          else_fixed_value: ''
+          else_fixed_value: '',
+          then_value_data_type: 'text',
+          else_value_data_type: 'text'
         }
       ];
     } else {
@@ -201,7 +128,9 @@ export class JournalConditionComponent implements OnInit {
         then_selected_fieldId: '',
         then_fixed_value: '',
         else_selected_fieldId: '',
-        else_fixed_value: ''
+        else_fixed_value: '',
+        then_value_data_type: 'text',
+        else_value_data_type: 'text'
       });
     }
   }
@@ -235,7 +164,12 @@ export class JournalConditionComponent implements OnInit {
   }
 
   addCondition(groupIndex: number, ifIndex: number) {
-    this.ifConditions[ifIndex].field_groups[groupIndex].field_cons.push({ con_field: '', con_operator: '', con_value: '' });
+    this.ifConditions[ifIndex].field_groups[groupIndex].field_cons.push({
+      con_field: '',
+      con_operator: '',
+      con_value: '',
+      con_data_type: 'text'
+    });
   }
 
   removeCondition(groupIndex: number, conditionIndex: number, ifIndex: number) {
@@ -246,11 +180,13 @@ export class JournalConditionComponent implements OnInit {
     this.ifConditions[ifIndex].field_groups.splice(groupIndex, 1);
   }
 
-  // AND/OR 切换处理
-  // onSwitchChange(value: boolean, groupIndex: number, ifIndex: number) {
-  //   // 当开关切换时，bool转string
-  //   this.ifConditions[ifIndex].field_groups[groupIndex].switch_type = value || 'or' ? 'and' : 'or';
-  // }
+  // 条件字段切换时
+  onConFieldChange(value: string, ifIndex: number, groupIndex: number, conditionIndex: number) {
+    // 找到当前字段获取数据类型并隐式存储到该条数据中
+    const currentField = this.swkFields.find(item => item.field_id === value);
+    const currentFieldType = currentField.field_type;
+    this.ifConditions[ifIndex].field_groups[groupIndex].field_cons[conditionIndex].con_data_type = currentFieldType;
+  }
 
   // Then结果类型切换时初始化自定义字段
   onThenTypeChange(value: string, ifIndex: number) {
@@ -258,12 +194,20 @@ export class JournalConditionComponent implements OnInit {
     this.ifConditions[ifIndex].then_custom_fields = [];
   }
 
+  // Then字段切换
+  onThenFieldChange(value: string, ifIndex: number) {
+    const currentField = this.swkFields.find(item => item.field_id === value);
+    const currentFieldType = currentField.field_type;
+    this.ifConditions[ifIndex].then_value_data_type = currentFieldType;
+  }
+
   // Then函数类型切换处理
   onThenCustomTypeChange(value: string, ifIndex: number) {
     this.ifConditions[ifIndex].then_custom_fields = [
       {
         custom_field_type: 'field',
-        custom_field_value: ''
+        custom_field_value: '',
+        custom_field_data_type: 'text'
       }
     ];
   }
@@ -273,7 +217,8 @@ export class JournalConditionComponent implements OnInit {
     this.ifConditions[ifIndex].else_custom_fields = [
       {
         custom_field_type: 'field',
-        custom_field_value: ''
+        custom_field_value: '',
+        custom_field_data_type: 'text'
       }
     ];
   }
@@ -303,12 +248,29 @@ export class JournalConditionComponent implements OnInit {
     }
   }
 
+  // Else字段切换
+  onElseFieldChange(value: string, ifIndex: number) {
+    const currentField = this.swkFields.find(item => item.field_id === value);
+    const currentFieldType = currentField.field_type;
+    this.ifConditions[ifIndex].else_value_data_type = currentFieldType;
+  }
+
   // 添加自定义Then字段
   addThenField(ifIndex: number) {
-    this.ifConditions[ifIndex].then_custom_fields.push({
-      custom_field_type: 'field',
-      custom_field_value: ''
-    });
+    if (this.ifConditions[ifIndex].then_custom_type === 'add') {
+      // 算数强制数字类型
+      this.ifConditions[ifIndex].then_custom_fields.push({
+        custom_field_type: 'field',
+        custom_field_value: '',
+        custom_field_data_type: 'number'
+      });
+    } else {
+      this.ifConditions[ifIndex].then_custom_fields.push({
+        custom_field_type: 'field',
+        custom_field_value: '',
+        custom_field_data_type: 'text'
+      });
+    }
   }
 
   // 删除自定义Then字段
@@ -318,24 +280,55 @@ export class JournalConditionComponent implements OnInit {
 
   // 添加自定义Else字段
   addElseField(ifIndex: number) {
-    this.ifConditions[ifIndex].else_custom_fields.push({
-      custom_field_type: 'field',
-      custom_field_value: ''
-    });
+    if (this.ifConditions[ifIndex].else_custom_type === 'add') {
+      this.ifConditions[ifIndex].else_custom_fields.push({
+        custom_field_type: 'field',
+        custom_field_value: '',
+        custom_field_data_type: 'number'
+      });
+    } else {
+      this.ifConditions[ifIndex].else_custom_fields.push({
+        custom_field_type: 'field',
+        custom_field_value: '',
+        custom_field_data_type: 'text'
+      });
+    }
   }
   // 删除自定义Else字段
   removeElseField(ifIndex: number, fieldIndex: number) {
     this.ifConditions[ifIndex].else_custom_fields.splice(fieldIndex, 1);
   }
 
-  // 自定义函数字段类型切换处理
+  // Then自定义函数字段类型切换处理
   onThenCustomFieldTypeChange(value: string, ifIndex: number, fieldIndex: number) {
     this.ifConditions[ifIndex].then_custom_fields[fieldIndex].custom_field_value = '';
+    // 算数强制数字类型
+    if (this.ifConditions[ifIndex].then_custom_type === 'add') {
+      this.ifConditions[ifIndex].then_custom_fields[fieldIndex].custom_field_data_type = 'number';
+    }
   }
 
-  // 自定义函数字段类型切换处理
+  // Else自定义函数字段类型切换处理
   onElseCustomFieldTypeChange(value: string, ifIndex: number, fieldIndex: number) {
     this.ifConditions[ifIndex].else_custom_fields[fieldIndex].custom_field_value = '';
+    // 算数强制数字类型
+    if (this.ifConditions[ifIndex].else_custom_type === 'add') {
+      this.ifConditions[ifIndex].else_custom_fields[fieldIndex].custom_field_data_type = 'number';
+    }
+  }
+
+  // Then自定义字段切换处理
+  onThenCustomFieldChange(value: string, ifIndex: number, fieldIndex: number) {
+    const currentField = this.swkFields.find(item => item.field_id === value);
+    const currentFieldType = currentField.field_type;
+    this.ifConditions[ifIndex].then_custom_fields[fieldIndex].custom_field_data_type = currentFieldType;
+  }
+
+  // Else自定义字段切换处理
+  onElseCustomFieldChange(value: string, ifIndex: number, fieldIndex: number) {
+    const currentField = this.swkFields.find(item => item.field_id === value);
+    const currentFieldType = currentField.field_type;
+    this.ifConditions[ifIndex].else_custom_fields[fieldIndex].custom_field_data_type = currentFieldType;
   }
 
   // 折叠面板点击触发
@@ -345,27 +338,6 @@ export class JournalConditionComponent implements OnInit {
     } else {
       this.ifConditions[ifIndex].collapaseNotice = '詳細を表示';
     }
-  }
-
-  // 条件选择触发
-  ifConditionChange(ifIndex: number, conditionName: string, collapaseNotice: string, active: boolean) {
-    if (conditionName === 'shinki') {
-      this.ifConditions[ifIndex].field_groups = [];
-      this.ifConditions[ifIndex].collapaseNotice = collapaseNotice;
-      this.ifConditions[ifIndex].active = false;
-      this.ifConditions[ifIndex].then_value = '';
-      this.ifConditions[ifIndex].shinki_flag = true;
-    } else {
-      // 深拷贝
-      this.ifConditions[ifIndex] = Object.assign(
-        {},
-        this.tempIfConditions.find(ifCondition => ifCondition.condition_name === conditionName)
-      );
-      this.ifConditions[ifIndex].shinki_flag = false;
-    }
-    // 不改变展开状态
-    this.ifConditions[ifIndex].collapaseNotice = collapaseNotice;
-    this.ifConditions[ifIndex].active = active;
   }
 
   // 保存模板 TODO

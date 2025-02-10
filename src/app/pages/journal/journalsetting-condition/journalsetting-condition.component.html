@@ -6,26 +6,6 @@
     <!-- 条件运算符 -->
     <div nz-row style="margin-right: 10px; margin-bottom: 10px">
       <nz-tag nzColor="#108ee9" style="margin-right: 10px">条件No.{{ ifIndex + 1 }}</nz-tag>
-      <!-- <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px">
-        <nz-form-item style="margin-bottom: 0px">
-          <nz-form-control>
-            <nz-select
-              style="width: 100%"
-              [(ngModel)]="ifCondition.condition_name"
-              (ngModelChange)="
-                ifConditionChange(ifIndex, ifCondition.condition_name, ifCondition.collapaseNotice, ifCondition.active)
-              "
-            >
-              <nz-option
-                *ngFor="let item of tempIfConditions"
-                [nzLabel]="item.condition_name"
-                [nzValue]="item.condition_name"
-              ></nz-option>
-              <nz-option nzLabel="新规条件" nzValue="shinki"></nz-option>
-            </nz-select>
-          </nz-form-control>
-        </nz-form-item>
-      </div> -->
       <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px" *ngIf="ifCondition.shinki_flag">
         <nz-form-item style="margin-bottom: 0px">
           <nz-form-control>
@@ -54,7 +34,6 @@
           <button nz-button (click)="addConditionGroup('or', ifIndex)" nzType="primary" style="margin-right: 10px">
             ORグループ追加
           </button>
-          <!-- <button nz-button (click)="createCondition()">生成</button> -->
         </div>
 
         <div *ngFor="let group of ifCondition.field_groups; let groupIndex = index" style="margin-bottom: 10px">
@@ -90,7 +69,11 @@
               <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
                 <nz-form-item style="margin-bottom: 0px">
                   <nz-form-control>
-                    <nz-select style="width: 100%" [(ngModel)]="condition.con_field">
+                    <nz-select
+                      style="width: 100%"
+                      [(ngModel)]="condition.con_field"
+                      (ngModelChange)="onConFieldChange($event, ifIndex, groupIndex, conditionIndex)"
+                    >
                       <nz-option
                         *ngFor="let item of swkFields"
                         [nzLabel]="item.field_name | translate"
@@ -106,11 +89,8 @@
                 <nz-form-item style="margin-bottom: 0px">
                   <nz-form-control>
                     <nz-select style="width: 100%" [(ngModel)]="condition.con_operator">
-                      <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue='{"$eq":["a","b"]}'></nz-option>
-                      <nz-option
-                        [nzLabel]="'page.datastore.notEqual' | translate"
-                        nzValue='{"$ne":["a","b"]}'
-                      ></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue="eq"></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.notEqual' | translate" nzValue="ne"></nz-option>
                     </nz-select>
                   </nz-form-control>
                 </nz-form-item>
@@ -158,7 +138,11 @@
               <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
               <nz-form-item *ngIf="ifCondition.then_type === 'field'" style="margin-bottom: 0px; margin-right: 10px">
                 <nz-form-control>
-                  <nz-select style="width: 100%" [(ngModel)]="ifCondition.then_selected_fieldId">
+                  <nz-select
+                    style="width: 100%"
+                    [(ngModel)]="ifCondition.then_selected_fieldId"
+                    (ngModelChange)="onThenFieldChange($event, ifIndex)"
+                  >
                     <nz-option
                       *ngFor="let item of swkFields"
                       [nzLabel]="item.field_name | translate"
@@ -182,9 +166,8 @@
                     [(ngModel)]="ifCondition.then_custom_type"
                     (ngModelChange)="onThenCustomTypeChange($event, ifIndex)"
                   >
-                    <nz-option nzLabel="加算" nzValue="plus"></nz-option>
+                    <nz-option nzLabel="加算" nzValue="add"></nz-option>
                     <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
-                    <nz-option nzLabel="文字化" nzValue="str"></nz-option>
                   </nz-select>
                 </nz-form-control>
               </nz-form-item>
@@ -213,13 +196,17 @@
               <div nz-col nzSpan="4">
                 <!-- 当选择为 "算术运算" 且 "台账字段" 时显示 -->
                 <nz-form-item
-                  *ngIf="ifCondition.then_custom_type === 'plus' && field.custom_field_type === 'field'"
+                  *ngIf="ifCondition.then_custom_type === 'add' && field.custom_field_type === 'field'"
                   style="margin-bottom: 10px; margin-right: 10px"
                 >
                   <nz-form-control>
-                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
+                    <nz-select
+                      style="width: 100%"
+                      [(ngModel)]="field.custom_field_value"
+                      (ngModelChange)="onThenCustomFieldChange($event, ifIndex, fieldIndex)"
+                    >
                       <nz-option
-                        *ngFor="let item of numberSwkFields "
+                        *ngFor="let item of numberSwkFields"
                         [nzLabel]="item.field_name | translate"
                         [nzValue]="item.field_id"
                       ></nz-option>
@@ -228,19 +215,27 @@
                 </nz-form-item>
                 <!-- 当选择为 "非算术运算" 且 "台账字段" 时显示 -->
                 <nz-form-item
-                *ngIf="ifCondition.then_custom_type !== '' && ifCondition.then_custom_type !== 'plus' && field.custom_field_type === 'field'"
-                style="margin-bottom: 10px; margin-right: 10px"
-              >
-                <nz-form-control>
-                  <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
-                    <nz-option
-                      *ngFor="let item of strAndNumberSwkFields "
-                      [nzLabel]="item.field_name | translate"
-                      [nzValue]="item.field_id"
-                    ></nz-option>
-                  </nz-select>
-                </nz-form-control>
-              </nz-form-item>
+                  *ngIf="
+                    ifCondition.then_custom_type !== '' &&
+                    ifCondition.then_custom_type !== 'add' &&
+                    field.custom_field_type === 'field'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select
+                      style="width: 100%"
+                      [(ngModel)]="field.custom_field_value"
+                      (ngModelChange)="onThenCustomFieldChange($event, ifIndex, fieldIndex)"
+                    >
+                      <nz-option
+                        *ngFor="let item of strAndNumberSwkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
                 <!-- 当选择为 "加算" 且 "固定值" 时显示 -->
                 <nz-form-item
                   *ngIf="ifCondition.then_custom_type !== '' && field.custom_field_type === 'value'"
@@ -305,7 +300,11 @@
               <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
               <nz-form-item *ngIf="ifCondition.else_type === 'field'" style="margin-bottom: 0px; margin-right: 10px">
                 <nz-form-control>
-                  <nz-select style="width: 100%" [(ngModel)]="ifCondition.else_selected_fieldId">
+                  <nz-select
+                    style="width: 100%"
+                    [(ngModel)]="ifCondition.else_selected_fieldId"
+                    (ngModelChange)="onElseFieldChange($event, ifIndex)"
+                  >
                     <nz-option
                       *ngFor="let item of swkFields"
                       [nzLabel]="item.field_name | translate"
@@ -329,7 +328,7 @@
                     [(ngModel)]="ifCondition.else_custom_type"
                     (ngModelChange)="onElseCustomTypeChange($event, ifIndex)"
                   >
-                    <nz-option nzLabel="加算" nzValue="plus"></nz-option>
+                    <nz-option nzLabel="加算" nzValue="add"></nz-option>
                     <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
                     <!-- <nz-option nzLabel="文字化" nzValue="str"></nz-option> -->
                   </nz-select>
@@ -360,11 +359,15 @@
               <div nz-col nzSpan="4">
                 <!-- 当选择为 "算术运算" 且 "台账字段" 时显示 -->
                 <nz-form-item
-                  *ngIf="ifCondition.else_custom_type === 'plus' && field.custom_field_type === 'field'"
+                  *ngIf="ifCondition.else_custom_type === 'add' && field.custom_field_type === 'field'"
                   style="margin-bottom: 10px; margin-right: 10px"
                 >
                   <nz-form-control>
-                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
+                    <nz-select
+                      style="width: 100%"
+                      [(ngModel)]="field.custom_field_value"
+                      (ngModelChange)="onElseCustomFieldChange($event, ifIndex, fieldIndex)"
+                    >
                       <nz-option
                         *ngFor="let item of numberSwkFields"
                         [nzLabel]="item.field_name | translate"
@@ -375,11 +378,19 @@
                 </nz-form-item>
                 <!-- 当选择为 "非算术运算" 且 "台账字段" 时显示 -->
                 <nz-form-item
-                  *ngIf="ifCondition.else_custom_type !== '' && ifCondition.else_custom_type !== 'plus' && field.custom_field_type === 'field'"
+                  *ngIf="
+                    ifCondition.else_custom_type !== '' &&
+                    ifCondition.else_custom_type !== 'add' &&
+                    field.custom_field_type === 'field'
+                  "
                   style="margin-bottom: 10px; margin-right: 10px"
                 >
                   <nz-form-control>
-                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value">
+                    <nz-select
+                      style="width: 100%"
+                      [(ngModel)]="field.custom_field_value"
+                      (ngModelChange)="onElseCustomFieldChange($event, ifIndex, fieldIndex)"
+                    >
                       <nz-option
                         *ngFor="let item of strAndNumberSwkFields"
                         [nzLabel]="item.field_name | translate"

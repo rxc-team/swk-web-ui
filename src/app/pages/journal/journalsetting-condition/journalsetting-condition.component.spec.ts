@@ -1,20 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { JournalConditionComponent } from './journal-condition.component';
+import { JournalsettingConditionComponent } from './journalsetting-condition.component';
 
 describe('JournalConditionComponent', () => {
-  let component: JournalConditionComponent;
-  let fixture: ComponentFixture<JournalConditionComponent>;
+  let component: JournalsettingConditionComponent;
+  let fixture: ComponentFixture<JournalsettingConditionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ JournalConditionComponent ]
-    })
-    .compileComponents();
+      declarations: [JournalsettingConditionComponent]
+    }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(JournalConditionComponent);
+    fixture = TestBed.createComponent(JournalsettingConditionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

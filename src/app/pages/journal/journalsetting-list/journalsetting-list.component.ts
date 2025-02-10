@@ -12,7 +12,7 @@ import _ from 'lodash';
 import cloneDeep from 'lodash/cloneDeep';
 import { forkJoin } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { JournalConditionComponent } from '../journal-condition/journal-condition.component';
+import { JournalsettingConditionComponent } from '../journalsetting-condition/journalsetting-condition.component';
 
 interface IfCondition {
   field_groups: ConditionGroup[];
@@ -43,7 +43,7 @@ interface ConditionGroup {
   styleUrls: ['./journalsetting-list.less']
 })
 export class JournalsettingListComponent implements OnInit {
-  @ViewChild(JournalConditionComponent) childComponent: JournalConditionComponent;
+  @ViewChild(JournalsettingConditionComponent) childComponent: JournalsettingConditionComponent;
   isSmall: any;
   constructor(
     private tokenService: TokenStorageService,
