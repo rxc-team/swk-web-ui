@@ -38,7 +38,7 @@ export class JournalsettingListComponent implements OnInit {
       validFlag: ['', [Validators.required]],
       handleMonth: [this.handleMonth],
       confimMethod: ['sabun'],
-      journalStructure: ['primary']
+      journalType: ['primary']
     });
   }
 
@@ -121,7 +121,7 @@ export class JournalsettingListComponent implements OnInit {
   SelectJournals: any[] = [];
   SelectedJournals: any[] = [];
   isOpen = {};
-  journalStructure = '';
+  journalType = '';
 
   ngOnInit(): void {
     this.init();
@@ -162,9 +162,9 @@ export class JournalsettingListComponent implements OnInit {
       if (res && res.confim_method) {
         this.form.controls.confimMethod.setValue(res.confim_method);
       }
-      if (res && res.journal_structure) {
-        this.journalStructure = res.journal_structure;
-        this.form.controls.journalStructure.setValue(res.journal_structure);
+      if (res && res.journal_type) {
+        this.journalType = res.journal_type;
+        this.form.controls.journalType.setValue(res.journal_type);
       }
     });
     this.form.patchValue({ handleMonth: this.handleMonth });
@@ -173,7 +173,6 @@ export class JournalsettingListComponent implements OnInit {
       if (data) {
         this.SelectedJournals = data;
         this.journals = this.buildData(data);
-        console.log(this.journals);
       } else {
         this.journals = [];
       }
@@ -225,7 +224,7 @@ export class JournalsettingListComponent implements OnInit {
       handleMonth: format(new Date(this.form.value.handleMonth), 'yyyy-MM'),
       swk_control: this.swkControl,
       confim_method: this.form.controls.confimMethod.value,
-      journal_structure: this.form.controls.journalStructure.value
+      journal_type: this.form.controls.journalType.value
     };
     this.appService.modifySwkSetting(this.appId, params);
     this.message.success(this.i18n.translateLang('common.message.success.S_002'));
@@ -235,7 +234,7 @@ export class JournalsettingListComponent implements OnInit {
   buildData(data: any[]) {
     const dataList = [];
     let line = 1;
-    if (this.journalStructure == 'primary') {
+    if (this.journalType == 'primary') {
       data.forEach((journal, i) => {
         const patterns: any[] = journal.patterns;
         patterns.forEach((pattern, j) => {
@@ -278,7 +277,7 @@ export class JournalsettingListComponent implements OnInit {
               other: ''
             });
             // 用于合并行
-            let mergedRow = null; 
+            let mergedRow = null;
             let index = 1;
             subjects.forEach((subject, k) => {
               const isLendingDivision1 = subject.lending_division === '1';
@@ -288,8 +287,8 @@ export class JournalsettingListComponent implements OnInit {
                 // 如果没有合并行，则创建新的合并行
                 if (!mergedRow) {
                   mergedRow = {
-                    no: '', 
-                    name: `${line}-${index}`, 
+                    no: '',
+                    name: `${line}-${index}`,
                     debt: isLendingDivision2 ? subject.default_name : '',
                     credit: isLendingDivision1 ? subject.default_name : '',
                     amount: subject.amount_name,
@@ -298,10 +297,10 @@ export class JournalsettingListComponent implements OnInit {
                 } else {
                   // 如果是同一行的内容，合并 'debt' 和 'credit'
                   if (isLendingDivision2) {
-                    mergedRow.debt = subject.default_name; 
+                    mergedRow.debt = subject.default_name;
                   }
                   if (isLendingDivision1) {
-                    mergedRow.credit = subject.default_name; 
+                    mergedRow.credit = subject.default_name;
                   }
                   index++;
                 }
@@ -311,7 +310,7 @@ export class JournalsettingListComponent implements OnInit {
               if (mergedRow && ((isLendingDivision1 && mergedRow.debt) || (isLendingDivision2 && mergedRow.credit))) {
                 dataList.push(mergedRow);
                 // 重置mergedRow，准备处理下一个合并行
-                mergedRow = null; 
+                mergedRow = null;
               }
             });
             line++;
@@ -458,9 +457,8 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   applySelection(): void {
-     // 过滤出选中的 journal
-    const selectedJournalIds = this.SelectJournals.filter(journal => journal.selected)
-      .map(journal => journal.journal_id);
+    // 过滤出选中的 journal
+    const selectedJournalIds = this.SelectJournals.filter(journal => journal.selected).map(journal => journal.journal_id);
 
     // 根据 selectedJournalIds 过滤 SelectJournals
     this.SelectJournals = this.SelectJournals.filter(journal => selectedJournalIds.includes(journal.journal_id));

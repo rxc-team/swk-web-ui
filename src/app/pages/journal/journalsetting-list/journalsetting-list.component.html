@@ -31,10 +31,10 @@
       <div style="margin-top: 15px">
         <nz-form-item style="width: 100%">
           <nz-form-label>
-            {{ 'common.text.journalStructure' | translate }}
+            {{ 'common.text.journalType' | translate }}
           </nz-form-label>
           <nz-form-control style="width: 100%">
-            <nz-radio-group formControlName="journalStructure">
+            <nz-radio-group formControlName="journalType">
               <label nz-radio nzValue="primary">{{ 'common.text.primaryJournal' | translate }}</label>
               <label nz-radio nzValue="single">{{ 'common.text.singleJournal' | translate }}</label>
             </nz-radio-group>
@@ -319,7 +319,7 @@
       </div>
     </nz-tab>
     <nz-tab [nzTitle]="'header.title.swkList' | translate">
-      <button nz-button nzType="primary" type="button" (click)="openModal()">分录结构体选择</button>
+      <button nz-button nzType="primary" type="button" (click)="openModal()">仕訳の選択</button>
       <div style="padding-top: 16px">
         <nz-table
           #basicTable

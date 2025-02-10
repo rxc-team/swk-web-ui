@@ -58,7 +58,7 @@ export class AppService {
       handleMonth: string;
       swk_control: boolean;
       confim_method: string;
-      journal_structure: string;
+      journal_type: string;
     }
   ): Promise<any> {
     return this.http
