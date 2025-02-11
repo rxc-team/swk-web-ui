@@ -49,7 +49,7 @@ export class AppService {
   }
 
   /**
-   * @description: 更新月次设定
+   * @description: 更新基本设定
    */
   modifySwkSetting(
     id: string,
@@ -58,6 +58,7 @@ export class AppService {
       handleMonth: string;
       swk_control: boolean;
       confim_method: string;
+      journal_type: string;
     }
   ): Promise<any> {
     return this.http

@@ -190,4 +190,32 @@ export class JournalService {
       })
       .toPromise();
   }
+
+  /**
+   * @description: 添加选择分录结构体
+   * @return
+   */
+  addSelectJournals(param: any): Promise<any> {
+    return this.http
+      .post(`journal/add/journals`, param, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
+
+  /**
+   * @description: 获取选择分录
+   * @return: 返回后台数据
+   */
+  getSelectJournals(): Promise<any> {
+    return this.http
+      .get(`journal/select/journals`, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
 }

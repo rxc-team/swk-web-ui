@@ -28,6 +28,19 @@
           </nz-form-control>
         </nz-form-item>
       </div>
+      <div style="margin-top: 15px">
+        <nz-form-item style="width: 100%">
+          <nz-form-label>
+            {{ 'common.text.journalType' | translate }}
+          </nz-form-label>
+          <nz-form-control style="width: 100%">
+            <nz-radio-group formControlName="journalType">
+              <label nz-radio nzValue="primary">{{ 'common.text.primaryJournal' | translate }}</label>
+              <label nz-radio nzValue="single">{{ 'common.text.singleJournal' | translate }}</label>
+            </nz-radio-group>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
       <button nz-button nzType="primary" type="button" (click)="submit()">
         {{ 'common.button.save' | translate }}
       </button>
@@ -333,6 +346,7 @@
       </div>
     </nz-tab>
     <nz-tab [nzTitle]="'header.title.swkList' | translate">
+      <button nz-button nzType="primary" type="button" (click)="openModal()">仕訳の選択</button>
       <div style="padding-top: 16px">
         <nz-table
           #basicTable
@@ -364,14 +378,37 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let data of basicTable.data" [ngClass]="{ dashboard_bg: data.no }">
-              <td>{{ data.no }}</td>
-              <td [colSpan]="data.no ? 4 : 1">{{ data.name }}</td>
-              <td>{{ data.credit }}</td>
-              <td>{{ data.debt }}</td>
-              <td>{{ data.amount }}</td>
-              <td>{{ data.other }}</td>
-            </tr>
+            <ng-container *ngFor="let data of journals">
+              <!-- 主项行 -->
+              <tr *ngIf="data.no" [ngClass]="{ dashboard_bg: data.no }">
+                <td>{{ data.no }}</td>
+                <td [colSpan]="data.no ? 4 : 1">
+                  {{ data.name }}
+                  <!-- 展开/收起按钮 -->
+                  <button nz-button nzSize="small" (click)="toggleChildren(data)">
+                    <i nz-icon *ngIf="data.expanded" nzType="minus"></i>
+                    <i nz-icon *ngIf="!data.expanded" nzType="plus"></i>
+                  </button>
+                </td>
+                <td>{{ data.credit }}</td>
+                <td>{{ data.debt }}</td>
+                <td>{{ data.amount }}</td>
+                <td>{{ data.other }}</td>
+              </tr>
+
+              <!-- 子项行 -->
+              <ng-container *ngIf="data.expanded">
+                <tr *ngFor="let child of getChildren(data.no)">
+                  <td></td>
+                  <!-- 子项没有编号 -->
+                  <td>{{ child.name }}</td>
+                  <td>{{ child.credit }}</td>
+                  <td>{{ child.debt }}</td>
+                  <td>{{ child.amount }}</td>
+                  <td>{{ child.other }}</td>
+                </tr>
+              </ng-container>
+            </ng-container>
           </tbody>
         </nz-table>
       </div>
@@ -390,6 +427,23 @@
   [nzMaskClosable]="false"
 >
   <ng-template nzModalContent>
-    <app-journalsetting-condition [ifConditions]="ifConditions" [datastoreId]="swk_datastore_Id"></app-journalsetting-condition>
+    <app-journalsetting-condition
+      [ifConditions]="ifConditions"
+      [datastoreId]="swk_datastore_Id"
+    ></app-journalsetting-condition>
+  </ng-template>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="isModalVisible"
+  [nzTitle]="'仕訳の選択'"
+  (nzOnCancel)="closeModal()"
+  (nzOnOk)="applySelection()"
+  [nzWidth]="1000"
+>
+  <ng-template nzModalContent>
+    <div *ngFor="let journal of SelectJournals">
+      <label nz-checkbox [(ngModel)]="journal.selected">{{ journal.journal_name }}</label>
+    </div>
   </ng-template>
 </nz-modal>
