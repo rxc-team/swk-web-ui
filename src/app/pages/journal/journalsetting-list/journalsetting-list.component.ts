@@ -606,6 +606,8 @@ export class JournalsettingListComponent implements OnInit {
 
   // 获取某个journal的所有内容
   getChildren(parentNo: number) {
-    return this.journals.filter(item => item.no === '' && item.name.startsWith(parentNo.toString()));
+    return this.journals.filter(
+      item => item.no === '' && item.name.startsWith(parentNo.toString()) && item.name.split('-')[0] === parentNo.toString()
+    );
   }
 }
