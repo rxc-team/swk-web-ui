@@ -143,10 +143,12 @@ export class JournalsettingConditionComponent implements OnInit {
       this.ifConditions[ifIndex - 1].else_fixed_value = '';
       this.ifConditions[ifIndex - 1].else_custom_type = '';
       this.ifConditions[ifIndex - 1].else_custom_fields = [];
+      this.ifConditions[ifIndex - 1].else_value_data_type = 'text';
     }
     this.ifConditions.splice(ifIndex, 1);
   }
 
+  // 删除后续所有条件
   removeAfterIfCondition(ifIndex: number) {
     this.ifConditions.splice(ifIndex + 1);
   }
@@ -192,6 +194,13 @@ export class JournalsettingConditionComponent implements OnInit {
   onThenTypeChange(value: string, ifIndex: number) {
     this.ifConditions[ifIndex].then_custom_type = '';
     this.ifConditions[ifIndex].then_custom_fields = [];
+    this.ifConditions[ifIndex].then_selected_fieldId = '';
+    this.ifConditions[ifIndex].then_fixed_value = '';
+    if(value === 'field' || value === 'value') {
+      this.ifConditions[ifIndex].then_value_data_type = 'text';
+    } else {
+      this.ifConditions[ifIndex].then_value_data_type = '';
+    }
   }
 
   // Then字段切换
@@ -229,6 +238,14 @@ export class JournalsettingConditionComponent implements OnInit {
     this.ifConditions[ifIndex].else_selected_fieldId = '';
     this.ifConditions[ifIndex].else_custom_type = '';
     this.ifConditions[ifIndex].else_custom_fields = [];
+    this.ifConditions[ifIndex].else_value = '';
+    // 数据类型处理
+    if(value === 'field' || value === 'value') {
+      this.ifConditions[ifIndex].else_value_data_type = 'text';
+    } else {
+      this.ifConditions[ifIndex].else_value_data_type = '';
+    }
+    // 新规条件处理
     if (value === 'new' && !(this.ifConditions.length > ifIndex + 1)) {
       this.addIfCondition();
       this.ifConditions[ifIndex].pre_else_type = value;
