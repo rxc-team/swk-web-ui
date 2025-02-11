@@ -194,6 +194,7 @@ export class JournalsettingConditionComponent implements OnInit {
   onThenTypeChange(value: string, ifIndex: number) {
     this.ifConditions[ifIndex].then_custom_type = '';
     this.ifConditions[ifIndex].then_custom_fields = [];
+    this.ifConditions[ifIndex].then_value = '';
     this.ifConditions[ifIndex].then_selected_fieldId = '';
     this.ifConditions[ifIndex].then_fixed_value = '';
     if(value === 'field' || value === 'value') {

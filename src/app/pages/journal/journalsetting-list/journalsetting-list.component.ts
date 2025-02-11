@@ -471,6 +471,7 @@ export class JournalsettingListComponent implements OnInit {
         if (index === ifConditions.length - 1) {
           updatedItem.else_type = con.else_type;
           updatedItem.else_value = con.else_value;
+          updatedItem.else_value_data_type = con.else_value_data_type;
         }
       });
       updatedItem.field_conditions = ifConditions;
