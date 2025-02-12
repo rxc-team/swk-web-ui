@@ -381,14 +381,15 @@
             <ng-container *ngFor="let data of journals">
               <!-- 主项行 -->
               <tr *ngIf="data.no" [ngClass]="{ dashboard_bg: data.no }">
-                <td>{{ data.no }}</td>
-                <td [colSpan]="data.no ? 4 : 1">
-                  {{ data.name }}
+                <td>{{ data.no }}
                   <!-- 展开/收起按钮 -->
                   <button nz-button nzSize="small" (click)="toggleChildren(data)">
                     <i nz-icon *ngIf="data.expanded" nzType="minus"></i>
                     <i nz-icon *ngIf="!data.expanded" nzType="plus"></i>
                   </button>
+                </td>
+                <td [colSpan]="data.no ? 4 : 1">
+                  {{ data.name }}
                 </td>
                 <td>{{ data.credit }}</td>
                 <td>{{ data.debt }}</td>

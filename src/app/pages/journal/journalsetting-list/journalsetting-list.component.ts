@@ -75,7 +75,7 @@ export class JournalsettingListComponent implements OnInit {
   cols = [
     {
       title: 'common.text.no',
-      width: '40px'
+      width: '60px'
     },
     {
       title: 'page.journal.type',
