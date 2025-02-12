@@ -6,13 +6,6 @@
     <!-- 条件运算符 -->
     <div nz-row style="margin-right: 10px; margin-bottom: 10px">
       <nz-tag nzColor="#108ee9" style="margin-right: 10px">条件No.{{ ifIndex + 1 }}</nz-tag>
-      <div nz-col nzSpan="6" style="margin-right: 10px; margin-bottom: 10px" *ngIf="ifCondition.shinki_flag">
-        <nz-form-item style="margin-bottom: 0px">
-          <nz-form-control>
-            <input nz-input style="width: 100%" [(ngModel)]="ifCondition.newConditionName" placeholder="" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
       <div nz-col nzSpan="8">
         <button nz-button (click)="openTemplateModal(ifIndex)" nzType="primary" style="margin-right: 10px">
           テンプレートを選択

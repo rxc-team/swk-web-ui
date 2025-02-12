@@ -40,7 +40,6 @@ interface IfCondition {
   else_value: string;
   then_value_data_type: string;
   else_value_data_type: string;
-  shinki_flag?: boolean;
 }
 
 @Component({

@@ -21,7 +21,6 @@ interface IfCondition {
   collapaseNotice: string;
   then_value: string;
   else_value: string;
-  shinki_flag?: boolean;
 }
 
 // 定义条件和条件区的数据结构
