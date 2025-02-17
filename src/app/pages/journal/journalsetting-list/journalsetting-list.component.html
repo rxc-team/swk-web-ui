@@ -316,8 +316,8 @@
                   [(ngModel)]="item.format"
                   [ngModelOptions]="{ standalone: true }"
                   nzAllowClear
-                  [nzDisabled]="item.field_type !== 'date'"
                   nzPlaceHolder="YYYY-MM-DD"
+                  *ngIf="item.field_type === 'date'"
                 >
                   <nz-option nzValue="2006/01/02" nzLabel="YYYY/MM/DD"></nz-option>
                   <nz-option nzValue="20060102" nzLabel="YYYYMMDD"></nz-option>
@@ -325,6 +325,35 @@
                   <nz-option nzValue="2006-01-02" nzLabel="YYYY-MM-DD"></nz-option>
                   <nz-option nzValue="2006-1-2" nzLabel="YYYY-M-D"></nz-option>
                   <nz-option nzValue="01/02/2006" nzLabel="MM/DD/YYYY"></nz-option>
+                </nz-select>
+                <nz-select
+                  style="width: 100%"
+                  [(ngModel)]="item.format"
+                  [ngModelOptions]="{ standalone: true }"
+                  nzAllowClear
+                  nzPlaceHolder="そのまま出力"
+                  *ngIf="item.field_type === 'text'"
+                >
+                  <nz-option nzValue="" nzLabel="そのまま出力"></nz-option>
+                  <nz-option nzValue="leftTrim" nzLabel="左端の空白を削除"></nz-option>
+                  <nz-option nzValue="rightTrim" nzLabel="右端の空白を削除"></nz-option>
+                  <nz-option nzValue="trim" nzLabel="両端の空白を削除"></nz-option>
+                </nz-select>
+                <nz-select
+                  style="width: 100%"
+                  [(ngModel)]="item.format"
+                  [ngModelOptions]="{ standalone: true }"
+                  nzAllowClear
+                  nzPlaceHolder="そのまま出力"
+                  *ngIf="item.field_type === 'number'"
+                >
+                  <nz-option nzValue="" nzLabel="そのまま出力"></nz-option>
+                  <nz-option nzValue="#,##0" nzLabel="#,##0"></nz-option>
+                  <nz-option nzValue="#,##0.0" nzLabel="#,##0.0"></nz-option>
+                  <nz-option nzValue="#,##0.00" nzLabel="#,##0.00"></nz-option>
+                  <nz-option nzValue="#,##0.000" nzLabel="#,##0.000"></nz-option>
+                  <nz-option nzValue="#,##0.0000" nzLabel="#,##0.0000"></nz-option>
+                  <nz-option nzValue="#,##0.00000" nzLabel="#,##0.00000"></nz-option>
                 </nz-select>
               </td>
               <td>

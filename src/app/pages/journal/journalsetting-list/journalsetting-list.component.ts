@@ -117,7 +117,7 @@ export class JournalsettingListComponent implements OnInit {
       width: '50px'
     },
     {
-      title: '日付形式',
+      title: '形式',
       width: '50px'
     },
     {
@@ -142,8 +142,6 @@ export class JournalsettingListComponent implements OnInit {
   swkControl = false;
   // 控制弹窗显示与否
   isJsonEditorVisible = false;
-  // 控制弹窗显示与否
-  isJsonEditorVisible2 = false;
   // json内容
   currentItem: string;
   fieldId: '';

@@ -466,7 +466,7 @@
   [nzMaskClosable]="false"
 >
   <ng-template nzModalContent>
-    <app-journalsetting-template></app-journalsetting-template>
+    <app-journalsetting-template [datastoreId]="datastoreId"></app-journalsetting-template>
   </ng-template>
 </nz-modal>
 
@@ -483,7 +483,13 @@
       <nz-form-item [ngStyle]="{ padding: '0px' }">
         <nz-form-label [nzSpan]="5">テンプレート名</nz-form-label>
         <nz-form-control>
-          <input nz-input [ngStyle]="{ width: isSmall ? '220px' : '300px' }" placeholder="" trim="blur" />
+          <input
+            nz-input
+            [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
+            placeholder=""
+            trim="blur"
+            [(ngModel)]="saveTemplateName"
+          />
         </nz-form-control>
       </nz-form-item>
     </div>

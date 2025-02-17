@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { FieldService, JournalService } from '@api';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import _ from 'lodash';
 
 // 定义条件和条件区的数据结构
 interface Condition {
@@ -48,100 +51,86 @@ interface IfCondition {
   styleUrls: ['./journalsetting-template.component.less']
 })
 export class JournalsettingTemplateComponent implements OnInit {
-  constructor() {}
+  @Input() datastoreId: string;
+  constructor(private js: JournalService, private fs: FieldService, private ms: NzModalService) {}
 
+  // 可选台账字段
+  swkFields: any[] = [];
   // 选择的模板
   selectedTemplate: any;
+  // 选择的模板详情
+  selectedDetailTemplate: any;
+  // 模板详情页面可见标识
+  isTemplateDetailsModalVisible = false;
+  // 模板列表
+  conditionTemplates: any[];
+  // 加载标识符
+  isLoading = false;
 
-  // 临时模板 模板功能TODO
-  tempIfConditions: IfCondition[] = [
-    {
-      field_groups: [
-        {
-          type: 'and',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: 'eq', con_value: '111', con_data_type: 'text' },
-            { con_field: 'shiwakeno', con_operator: 'ne', con_value: '111', con_data_type: 'text' }
-          ],
-          switch_type: 'or'
-        },
-        {
-          type: 'or',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: 'eq', con_value: '111', con_data_type: 'text' },
-            { con_field: 'shiwakeno', con_operator: 'ne', con_value: '111', con_data_type: 'text' }
-          ],
-          switch_type: 'and'
-        }
-      ],
-      condition_name: 'テンプレート1',
-      active: false,
-      collapaseNotice: '詳細を表示',
-      then_value: 'keiyakuno',
-      else_value: 'keiyakuno',
-      then_value_data_type: 'text',
-      else_value_data_type: 'text'
-    },
-    {
-      field_groups: [
-        {
-          type: 'and',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: 'eq', con_value: '222', con_data_type: 'text' },
-            { con_field: 'shiwakeno', con_operator: 'ne', con_value: '222', con_data_type: 'text' }
-          ],
-          switch_type: 'or'
-        },
-        {
-          type: 'or',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: 'eq', con_value: '222', con_data_type: 'text' },
-            { con_field: 'shiwakeno', con_operator: 'ne', con_value: '222', con_data_type: 'text' }
-          ],
-          switch_type: 'and'
-        }
-      ],
-      condition_name: 'テンプレート2',
-      active: false,
-      collapaseNotice: '詳細を表示',
-      then_value: 'keiyakuno',
-      else_value: 'keiyakuno',
-      then_value_data_type: 'text',
-      else_value_data_type: 'text'
-    },
-    {
-      field_groups: [
-        {
-          type: 'and',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: 'eq', con_value: '333', con_data_type: 'text' },
-            { con_field: 'shiwakeno', con_operator: 'ne', con_value: '333', con_data_type: 'text' }
-          ],
-          switch_type: 'or'
-        },
-        {
-          type: 'or',
-          field_cons: [
-            { con_field: 'keiyakuno', con_operator: 'eq', con_value: '333', con_data_type: 'text' },
-            { con_field: 'shiwakeno', con_operator: 'ne', con_value: '333', con_data_type: 'text' }
-          ],
-          switch_type: 'and'
-        }
-      ],
-      condition_name: 'テンプレート3',
-      active: false,
-      collapaseNotice: '詳細を表示',
-      then_value: 'keiyakuno',
-      else_value: 'keiyakuno',
-      then_value_data_type: 'text',
-      else_value_data_type: 'text'
-    }
-  ];
+  ngOnInit(): void {
+    this.isLoading = true;
+    // 获取台账字段
+    this.fs.getFields(this.datastoreId).then((data: any[]) => {
+      if (data) {
+        this.swkFields = data.filter(f => f.field_type !== 'file');
+        this.swkFields = this.swkFields.filter(f => !f.as_title);
+      } else {
+        this.swkFields = [];
+      }
+      this.swkFields = _.sortBy(this.swkFields, 'display_order');
+    });
+    this.getTemplates();
+  }
 
-  ngOnInit(): void {}
+  // 获取所有模板
+  getTemplates() {
+    this.js.getConditionTemplates().then((data: any) => {
+      if (data) {
+        this.conditionTemplates = data.condition_templates;
+      } else {
+        this.conditionTemplates = [];
+      }
+      // 默认选中第一个菜单项
+      if (this.conditionTemplates && this.conditionTemplates != undefined && this.conditionTemplates.length > 0) {
+        this.selectedTemplate = this.conditionTemplates[0].field_condition;
+      }
+      this.isLoading = false;
+    });
+  }
 
   // 删除模板
-  removeTemplate(tIndex: number) {
-    this.tempIfConditions.splice(tIndex, 1);
+  removeTemplate(template_id: string) {
+    this.ms.confirm({
+      nzTitle: '操作を確認する',
+      nzContent: '削除してもよろしいですか？',
+      nzOnOk: () => {
+        this.isLoading = true;
+        this.js.deleteConditionTemplate(template_id).then(() => {
+          this.getTemplates();
+        });
+      },
+      nzOnCancel: () => {}
+    });
+  }
+
+  // 打开模板详情
+  openTemplateDetailsModal(item) {
+    if (item.field_condition.then_type === 'field') {
+      item.field_condition.then_selected_fieldId = item.field_condition.then_value;
+    } else if (item.field_condition.then_type === 'value') {
+      item.field_condition.then_fixed_value = item.field_condition.then_value;
+    }
+    if (item.field_condition.else_type === 'field') {
+      item.field_condition.else_selected_fieldId = item.field_condition.else_value;
+    } else if (item.field_condition.else_type === 'value') {
+      item.field_condition.else_fixed_value = item.field_condition.else_value;
+    }
+    this.selectedDetailTemplate = item;
+    this.isTemplateDetailsModalVisible = true;
+  }
+
+  // 关闭模板详情
+  closeTemplateDetailsModal() {
+    this.isTemplateDetailsModalVisible = false;
   }
 }

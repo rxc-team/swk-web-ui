@@ -2,7 +2,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { Component, ViewChild, Input, OnInit } from '@angular/core';
-import { FieldService } from '@api';
+import { FieldService, JournalService } from '@api';
 import { I18NService } from '@core';
 import { JournalsettingTemplateComponent } from '../journalsetting-template/journalsetting-template.component';
 
@@ -50,6 +50,12 @@ interface IfCondition {
   else_value_data_type: string;
 }
 
+interface ConditionTemplate {
+  template_id: string;
+  template_name: string;
+  field_condition: IfCondition;
+}
+
 @Component({
   selector: 'app-journalsetting-condition',
   templateUrl: './journalsetting-condition.component.html',
@@ -61,7 +67,13 @@ export class JournalsettingConditionComponent implements OnInit {
   @Input() datastoreId: string;
   @Input() ifConditions: IfCondition[] = [];
 
-  constructor(private ms: NzModalService, private fs: FieldService, private message: NzMessageService, private i18n: I18NService) {}
+  constructor(
+    private ms: NzModalService,
+    private fs: FieldService,
+    private js: JournalService,
+    private message: NzMessageService,
+    private i18n: I18NService
+  ) {}
 
   // 加载中标识符
   isLoading = true;
@@ -75,6 +87,10 @@ export class JournalsettingConditionComponent implements OnInit {
   selectedIfIndex: number;
   // 模板保存窗口可视标识
   isSaveTemplateModalVisible = false;
+  // 保存模板名称
+  saveTemplateName: string;
+  // 选中要保存的模板
+  selectdCondition: IfCondition;
 
   ngOnInit() {
     // modal框内查询可选字段
@@ -196,7 +212,7 @@ export class JournalsettingConditionComponent implements OnInit {
     this.ifConditions[ifIndex].then_value = '';
     this.ifConditions[ifIndex].then_selected_fieldId = '';
     this.ifConditions[ifIndex].then_fixed_value = '';
-    if(value === 'field' || value === 'value') {
+    if (value === 'field' || value === 'value') {
       this.ifConditions[ifIndex].then_value_data_type = 'text';
     } else {
       this.ifConditions[ifIndex].then_value_data_type = '';
@@ -240,7 +256,7 @@ export class JournalsettingConditionComponent implements OnInit {
     this.ifConditions[ifIndex].else_custom_fields = [];
     this.ifConditions[ifIndex].else_value = '';
     // 数据类型处理
-    if(value === 'field' || value === 'value') {
+    if (value === 'field' || value === 'value') {
       this.ifConditions[ifIndex].else_value_data_type = 'text';
     } else {
       this.ifConditions[ifIndex].else_value_data_type = '';
@@ -357,9 +373,31 @@ export class JournalsettingConditionComponent implements OnInit {
     }
   }
 
-  // 保存模板 TODO
-  saveCondition(ifCondition?: IfCondition) {
-    this.message.success('保存しました');
+  // 保存模板
+  saveCondition(templateName?: string) {
+    const saveCondition = this.selectdCondition;
+    if (saveCondition.then_type === 'field') {
+      saveCondition.then_value = saveCondition.then_selected_fieldId;
+    } else if (saveCondition.then_type === 'value') {
+      saveCondition.then_value = saveCondition.then_fixed_value;
+    }
+    if (saveCondition.else_type === 'field') {
+      saveCondition.else_value = saveCondition.else_selected_fieldId;
+    } else if (saveCondition.else_type === 'value') {
+      saveCondition.else_value = saveCondition.else_fixed_value;
+    }
+    const conditionTemplate = {
+      field_condition: saveCondition,
+      template_id: this.generateRandomTemplateId(),
+      template_name: templateName
+    };
+
+    const params = {
+      condition_template: conditionTemplate
+    };
+    this.js.addConditionTemplate(params).then(() => {
+      this.message.success('保存しました');
+    });
   }
 
   // 打开模板modal框
@@ -375,13 +413,31 @@ export class JournalsettingConditionComponent implements OnInit {
 
   // 模板modal框OK按钮
   handleTemplateModalOK() {
-    this.ifConditions[this.selectedIfIndex] = this.childComponent.selectedTemplate;
-    this.ifConditions[this.selectedIfIndex].active = true;
+    // 如果模板存在，模板数据初始化到条件列表中
+    if (this.childComponent.selectedTemplate) {
+      this.ifConditions[this.selectedIfIndex] = this.childComponent.selectedTemplate;
+      this.ifConditions[this.selectedIfIndex].active = true;
+      this.ifConditions[this.selectedIfIndex].collapaseNotice = '詳細を非表示';
+      if (this.ifConditions[this.selectedIfIndex].then_type === 'field') {
+        this.ifConditions[this.selectedIfIndex].then_selected_fieldId = this.ifConditions[this.selectedIfIndex].then_value;
+      } else if (this.ifConditions[this.selectedIfIndex].then_type === 'value') {
+        this.ifConditions[this.selectedIfIndex].then_fixed_value = this.ifConditions[this.selectedIfIndex].then_value;
+      }
+      if (this.ifConditions[this.selectedIfIndex].else_type === 'field') {
+        this.ifConditions[this.selectedIfIndex].else_selected_fieldId = this.ifConditions[this.selectedIfIndex].else_value;
+      } else if (this.ifConditions[this.selectedIfIndex].else_type === 'value') {
+        this.ifConditions[this.selectedIfIndex].else_fixed_value = this.ifConditions[this.selectedIfIndex].else_value;
+      } else if (this.ifConditions[this.selectedIfIndex].else_type === 'new') {
+        this.addIfCondition();
+      }
+    }
     this.isTemplateModalVisible = false;
   }
 
   // 打开模板保存modal框
-  openSaveTemplateModal() {
+  openSaveTemplateModal(ifCondition) {
+    this.saveTemplateName = '';
+    this.selectdCondition = ifCondition;
     this.isSaveTemplateModalVisible = true;
   }
 
@@ -392,7 +448,12 @@ export class JournalsettingConditionComponent implements OnInit {
 
   // 模板保存modal框OK按钮
   handleSaveTemplateModalOK() {
-    this.saveCondition();
+    this.saveCondition(this.saveTemplateName);
     this.isSaveTemplateModalVisible = false;
+  }
+
+  // 随机生成唯一的 template_id
+  generateRandomTemplateId(): string {
+    return 'template_' + Math.floor(1000 + Math.random() * 9000).toString();
   }
 }

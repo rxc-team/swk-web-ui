@@ -218,4 +218,49 @@ export class JournalService {
       })
       .toPromise();
   }
+
+  /**
+   * @description: 查询所有自定义条件模板
+   * @return: 返回后台数据
+   */
+  getConditionTemplates(): Promise<any> {
+    return this.http
+      .get(`journal/select/condition/templates`, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
+
+  /**
+   * @description: 添加自定义条件模板
+   * @return
+   */
+  addConditionTemplate(param: any): Promise<any> {
+    return this.http
+      .post(`journal/add/condition/template`, param, {
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
+
+  /**
+   * @description: 删除自定义条件模板
+   * @return
+   */
+  deleteConditionTemplate(param: any): Promise<any> {
+    return this.http
+      .delete(`journal/delete/condition/template`, {
+        params: {
+          template_id: param
+        },
+        headers: {
+          token: 'true'
+        }
+      })
+      .toPromise();
+  }
 }

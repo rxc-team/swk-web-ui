@@ -1,15 +1,22 @@
-<div style="height: 500px; overflow: auto; padding: 2px" class="solid_border">
+<div *ngIf="isLoading">
+  <nz-spin></nz-spin>
+</div>
+<div style="height: 500px; overflow: auto; padding: 2px" class="solid_border" *ngIf="!isLoading">
+  <nz-empty *ngIf="!conditionTemplates || conditionTemplates.length === 0"></nz-empty>
   <ul nz-menu nzMode="inline">
-    <ng-container *ngFor="let item of tempIfConditions; let tIndex = index">
+    <ng-container *ngFor="let item of conditionTemplates; let tIndex = index">
       <li
         nz-menu-item
-        (click)="selectedTemplate = item"
+        (click)="selectedTemplate = item.field_condition"
         class="solid_border"
         style="display: flex; justify-content: space-between; align-items: center"
-        [nzSelected]="tIndex === 0"
+        [nzSelected]="selectedTemplate === item.field_condition"
       >
-        {{ item.condition_name }}
-        <button nz-button nzDanger  (click)="removeTemplate(tIndex)">
+        {{ item.template_name }}
+        <button nz-button nzType="primary" style="margin-left: auto" (click)="openTemplateDetailsModal(item)">
+          详情
+        </button>
+        <button nz-button nzDanger (click)="removeTemplate(item.template_id)" style="margin-left: 10px">
           <i nz-icon nzType="delete"></i>
           削除
         </button>
@@ -17,3 +24,380 @@
     </ng-container>
   </ul>
 </div>
+
+<!-- テンプレートの詳細弹窗 -->
+<nz-modal
+  [(nzVisible)]="isTemplateDetailsModalVisible"
+  nzTitle="テンプレートの詳細"
+  (nzOnCancel)="closeTemplateDetailsModal()"
+  [nzWidth]="1000"
+  [nzStyle]="{ height: '750px', marginTop: '-30px' }"
+  [nzMaskClosable]="false"
+>
+  <ng-template nzModalContent>
+    <div>
+      <!-- 条件运算符 -->
+      <nz-collapse style="margin-right: 10px; margin-bottom: 30px">
+        <div
+          *ngFor="let group of selectedDetailTemplate.field_condition.field_groups; let groupIndex = index"
+          style="margin-bottom: 10px"
+        >
+          <nz-card nzTitle="{{ group.type.toUpperCase() }} グループ" [nzBordered]="true">
+            <!-- 条件部分 -->
+            <div
+              *ngFor="let condition of group.field_cons; let conditionIndex = index"
+              style="display: flex; align-items: center; margin-bottom: 10px"
+            >
+              <!-- 条件字段 -->
+              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+                <nz-form-item style="margin-bottom: 0px">
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="condition.con_field" [nzDisabled]="true">
+                      <nz-option
+                        *ngFor="let item of swkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <!-- 条件运算符 -->
+              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+                <nz-form-item style="margin-bottom: 0px">
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="condition.con_operator" [nzDisabled]="true">
+                      <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue="eq"></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.notEqual' | translate" nzValue="ne"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <!-- 条件值 -->
+              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+                <nz-form-control>
+                  <input nz-input style="width: 100%" [(ngModel)]="condition.con_value" trim="blur" [disabled]="true" />
+                </nz-form-control>
+              </div>
+            </div>
+          </nz-card>
+        </div>
+
+        <div style="margin-bottom: 10px; margin-left: 28px">
+          <h3>条件が満たされた場合の出力</h3>
+
+          <!-- 符合条件时类型选择 -->
+          <div nz-row>
+            <nz-form-item style="margin-bottom: 0px; margin-right: 10px" nz-col nzSpan="4">
+              <nz-form-control>
+                <nz-select
+                  style="width: 100%"
+                  [(ngModel)]="selectedDetailTemplate.field_condition.then_type"
+                  [nzDisabled]="true"
+                >
+                  <nz-option nzLabel="台账フィールド" nzValue="field"></nz-option>
+                  <nz-option nzLabel="固定値" nzValue="value"></nz-option>
+                  <nz-option nzLabel="カスタム" nzValue="custom"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <div nz-col nzSpan="4">
+              <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
+              <nz-form-item
+                *ngIf="selectedDetailTemplate.field_condition.then_type === 'field'"
+                style="margin-bottom: 0px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <nz-select
+                    style="width: 100%"
+                    [(ngModel)]="selectedDetailTemplate.field_condition.then_selected_fieldId"
+                    [nzDisabled]="true"
+                  >
+                    <nz-option
+                      *ngFor="let item of swkFields"
+                      [nzLabel]="item.field_name | translate"
+                      [nzValue]="item.field_id"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- 当选择为 "固定值" 时显示 -->
+              <nz-form-item
+                *ngIf="selectedDetailTemplate.field_condition.then_type === 'value'"
+                style="margin-bottom: 0px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <input
+                    nz-input
+                    style="width: 100%"
+                    [(ngModel)]="selectedDetailTemplate.field_condition.then_fixed_value"
+                    placeholder=""
+                    [disabled]="true"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <!-- 当选择为 "custom" 时显示 -->
+              <nz-form-item
+                *ngIf="selectedDetailTemplate.field_condition.then_type === 'custom'"
+                style="margin-bottom: 0px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <nz-select
+                    style="width: 100%"
+                    [(ngModel)]="selectedDetailTemplate.field_condition.then_custom_type"
+                    [nzDisabled]="true"
+                  >
+                    <nz-option nzLabel="加算" nzValue="add"></nz-option>
+                    <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+          <nz-card>
+            <div
+              nz-row
+              *ngFor="let field of selectedDetailTemplate.field_condition.then_custom_fields; let fieldIndex = index"
+            >
+              <div nz-col nzSpan="4" nzOffset="9">
+                <!-- 当选择为 "加算" 时显示 -->
+                <nz-form-item
+                  *ngIf="selectedDetailTemplate.field_condition.then_custom_type !== ''"
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_type" [nzDisabled]="true">
+                      <nz-option nzLabel="台账フィールド" nzValue="field"></nz-option>
+                      <nz-option nzLabel="固定値" nzValue="value"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzSpan="4">
+                <!-- 当选择为 "算术运算" 且 "台账字段" 时显示 -->
+                <nz-form-item
+                  *ngIf="
+                    selectedDetailTemplate.field_condition.then_custom_type === 'add' &&
+                    field.custom_field_type === 'field'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value" [nzDisabled]="true">
+                      <nz-option
+                        *ngFor="let item of swkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+                <!-- 当选择为 "非算术运算" 且 "台账字段" 时显示 -->
+                <nz-form-item
+                  *ngIf="
+                    selectedDetailTemplate.field_condition.then_custom_type !== '' &&
+                    selectedDetailTemplate.field_condition.then_custom_type !== 'add' &&
+                    field.custom_field_type === 'field'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value" [nzDisabled]="true">
+                      <nz-option
+                        *ngFor="let item of swkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+                <!-- 当选择为 "加算" 且 "固定值" 时显示 -->
+                <nz-form-item
+                  *ngIf="
+                    selectedDetailTemplate.field_condition.then_custom_type !== '' &&
+                    field.custom_field_type === 'value'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-form-control>
+                      <input
+                        nz-input
+                        style="width: 100%"
+                        [(ngModel)]="field.custom_field_value"
+                        placeholder=""
+                        [disabled]="true"
+                      />
+                    </nz-form-control>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+          </nz-card>
+        </div>
+
+        <div style="margin-left: 28px">
+          <h3>条件が満たされない場合の出力</h3>
+          <div nz-row>
+            <nz-form-item style="margin-bottom: 0px; margin-right: 10px" nz-col nzSpan="4">
+              <nz-form-control>
+                <nz-select
+                  style="width: 100%"
+                  [(ngModel)]="selectedDetailTemplate.field_condition.else_type"
+                  [nzDisabled]="true"
+                >
+                  <nz-option nzLabel="台账フィールド" nzValue="field"></nz-option>
+                  <nz-option nzLabel="固定値" nzValue="value"></nz-option>
+                  <nz-option nzLabel="カスタム" nzValue="custom"></nz-option>
+                  <nz-option nzLabel="条件追加" nzValue="new"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <div nz-col nzSpan="4">
+              <!-- 当选择为 "台账字段" 时显示 符合条件时 -->
+              <nz-form-item
+                *ngIf="selectedDetailTemplate.field_condition.else_type === 'field'"
+                style="margin-bottom: 0px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <nz-select
+                    style="width: 100%"
+                    [(ngModel)]="selectedDetailTemplate.field_condition.else_selected_fieldId"
+                    [nzDisabled]="true"
+                  >
+                    <nz-option
+                      *ngFor="let item of swkFields"
+                      [nzLabel]="item.field_name | translate"
+                      [nzValue]="item.field_id"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- 当选择为 "固定值" 时显示 -->
+              <nz-form-item
+                *ngIf="selectedDetailTemplate.field_condition.else_type === 'value'"
+                style="margin-bottom: 0px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <input
+                    nz-input
+                    style="width: 100%"
+                    [(ngModel)]="selectedDetailTemplate.field_condition.else_fixed_value"
+                    placeholder=""
+                    [disabled]="true"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <!-- 当选择为 "custom" 时显示 -->
+              <nz-form-item
+                *ngIf="selectedDetailTemplate.field_condition.else_type === 'custom'"
+                style="margin-bottom: 0px; margin-right: 10px"
+              >
+                <nz-form-control>
+                  <nz-select
+                    style="width: 100%"
+                    [(ngModel)]="selectedDetailTemplate.field_condition.else_custom_type"
+                    [nzDisabled]="true"
+                  >
+                    <nz-option nzLabel="加算" nzValue="add"></nz-option>
+                    <nz-option nzLabel="文字結合" nzValue="concat"></nz-option>
+                    <!-- <nz-option nzLabel="文字化" nzValue="str"></nz-option> -->
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+          <nz-card style="margin-bottom: 10px">
+            <div
+              nz-row
+              *ngFor="let field of selectedDetailTemplate.field_condition.else_custom_fields; let fieldIndex = index"
+            >
+              <div nz-col nzSpan="4" nzOffset="9">
+                <!-- 当选择为 "加算" 时显示 -->
+                <nz-form-item
+                  *ngIf="selectedDetailTemplate.field_condition.else_custom_type !== ''"
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_type" [nzDisabled]="true">
+                      <nz-option nzLabel="台账フィールド" nzValue="field"></nz-option>
+                      <nz-option nzLabel="固定値" nzValue="value"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzSpan="4">
+                <!-- 当选择为 "算术运算" 且 "台账字段" 时显示 -->
+                <nz-form-item
+                  *ngIf="
+                    selectedDetailTemplate.field_condition.else_custom_type === 'add' &&
+                    field.custom_field_type === 'field'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value" [nzDisabled]="true">
+                      <nz-option
+                        *ngFor="let item of swkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+                <!-- 当选择为 "非算术运算" 且 "台账字段" 时显示 -->
+                <nz-form-item
+                  *ngIf="
+                    selectedDetailTemplate.field_condition.else_custom_type !== '' &&
+                    selectedDetailTemplate.field_condition.else_custom_type !== 'add' &&
+                    field.custom_field_type === 'field'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-select style="width: 100%" [(ngModel)]="field.custom_field_value" [nzDisabled]="true">
+                      <nz-option
+                        *ngFor="let item of swkFields"
+                        [nzLabel]="item.field_name | translate"
+                        [nzValue]="item.field_id"
+                      ></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+                <!-- 当选择为 "加算" 且 "固定值" 时显示 -->
+                <nz-form-item
+                  *ngIf="
+                    selectedDetailTemplate.field_condition.else_custom_type !== '' &&
+                    field.custom_field_type === 'value'
+                  "
+                  style="margin-bottom: 10px; margin-right: 10px"
+                >
+                  <nz-form-control>
+                    <nz-form-control>
+                      <input
+                        nz-input
+                        style="width: 100%"
+                        [(ngModel)]="field.custom_field_value"
+                        placeholder=""
+                        [disabled]="true"
+                      />
+                    </nz-form-control>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+          </nz-card>
+        </div>
+      </nz-collapse>
+    </div>
+  </ng-template>
+  <!-- 自定义底部按钮 -->
+  <ng-template nzModalFooter>
+    <button nz-button nzType="default" (click)="closeTemplateDetailsModal()">閉じる</button>
+  </ng-template>
+</nz-modal>
