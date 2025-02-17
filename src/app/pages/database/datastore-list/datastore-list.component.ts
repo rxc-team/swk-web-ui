@@ -131,7 +131,7 @@ export class DatastoreListComponent implements OnInit, OnDestroy {
   /**
    * @description: 画面销毁处理
    */
-  ngOnDestroy() { }
+  ngOnDestroy() {}
 
   /**
    * @description: 直接从服务器上下载csv文件
@@ -379,66 +379,19 @@ export class DatastoreListComponent implements OnInit, OnDestroy {
     this.confirmModal = this.modal.confirm({
       nzTitle: `${this.i18n.translateLang('common.message.confirm.clearTitle')}`,
       nzContent: `${this.i18n.translateLang('common.message.confirm.clearContent')}`,
-      nzOnOk: async () => {
-        var datastore_Id: Array<string> = []
-        const job1 = [this.ds.getDatastoreByKey('keiyakudaicho')];
-        await forkJoin(job1)
-          .toPromise()
-          .then((data: any[]) => {
-            const dsData = data[0]
-            datastore_Id.push(dsData.datastore_id)
-          });
-
-        const job2 = [this.ds.getDatastoreByKey('paymentStatus')];
-        await forkJoin(job2)
-          .toPromise()
-          .then((data: any[]) => {
-            const dsData = data[0]
-            datastore_Id.push(dsData.datastore_id)
-          });
-
-        const job3 = [this.ds.getDatastoreByKey('paymentInterest')];
-        await forkJoin(job3)
-          .toPromise()
-          .then((data: any[]) => {
-            const dsData = data[0]
-            datastore_Id.push(dsData.datastore_id)
-          });
-
-        const job4 = [this.ds.getDatastoreByKey('repayment')];
-        await forkJoin(job4)
-          .toPromise()
-          .then((data: any[]) => {
-            const dsData = data[0]
-            datastore_Id.push(dsData.datastore_id)
-          });
-
+      nzOnOk: () => {
         const datastoreId = this.route.snapshot.paramMap.get('d_id');
-        if (datastoreId != datastore_Id[0]) {
-          // 判断台账是否有数据正在审批，如果有就不清空(status=1表示未审批)
-          this.item.findUnApproveItems(datastoreId, '2').then((res: any) => {
-            if (res === 0) {
-              this.item.clear(datastoreId).then(() => {
-                this.message.success(this.i18n.translateLang('common.message.success.S_003'));
-                this.searchDatabaseItems(true);
-              });
-            } else {
-              this.message.warning(this.i18n.translateLang('common.message.warning.W_006'));
-            }
-          });
-        } else {
-          // 判断台账是否有数据正在审批，如果有就不清空(status=1表示未审批)
-          this.item.findUnApproveItems(datastoreId, '2').then((res: any) => {
-            this.item.clearAll(datastore_Id).then(data => {
-              if (data && data.msg) {
-                this.message.error(data.msg);
-              } else {
-                this.message.info(this.i18n.translateLang('common.message.info.I_003'));
-                this.searchDatabaseItems(true);
-              }
+        // 判断台账是否有数据正在审批，如果有就不清空(status=1表示未审批)
+        this.item.findUnApproveItems(datastoreId, '2').then((res: any) => {
+          if (res === 0) {
+            this.item.clear(datastoreId).then(() => {
+              this.message.success(this.i18n.translateLang('common.message.success.S_003'));
+              this.searchDatabaseItems(true);
             });
-          });
-        }
+          } else {
+            this.message.warning(this.i18n.translateLang('common.message.warning.W_006'));
+          }
+        });
       }
     });
   }

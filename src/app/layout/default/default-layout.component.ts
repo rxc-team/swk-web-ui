@@ -398,7 +398,7 @@ export class DefaultLayoutComponent implements OnInit {
               const appType = appData.app_type;
               for (let index = 0; index < dsList.length; index++) {
                 const element = dsList[index];
-                if (appType === 'rent' && (element.api_key === 'paymentInterest' || element.api_key === 'rireki')) {
+                if (appType === 'rent' && (element.api_key === 'paymentStatus' || element.api_key === 'rireki')) {
                   const child = {
                     level: 2,
                     path: `/datastores/${element.datastore_id}/list`,
