@@ -430,6 +430,12 @@ export class JournalsettingConditionComponent implements OnInit {
       } else if (this.ifConditions[this.selectedIfIndex].else_type === 'new') {
         this.addIfCondition();
       }
+      // 非最终条件的处理
+      if (this.ifConditions && this.ifConditions.length > this.selectedIfIndex + 1) {
+        this.ifConditions[this.selectedIfIndex].else_type = 'new';
+        this.ifConditions[this.selectedIfIndex].else_custom_fields = [];
+        this.message.warning('最後の条件ではないため、条件が満たされない場合の出力が適用されない可能性があります');
+      }
     }
     this.isTemplateModalVisible = false;
   }
