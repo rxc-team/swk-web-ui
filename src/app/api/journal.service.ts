@@ -37,6 +37,7 @@ export class JournalService {
     param: {
       pattern_id: string;
       subject_key: string;
+      subject_cd:string;
       lending_division?: string;
       subject_name?: string;
       amount_name?: string;

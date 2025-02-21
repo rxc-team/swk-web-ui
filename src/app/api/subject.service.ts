@@ -44,6 +44,7 @@ export class SubjectService {
     param: {
       assets_type: string;
       subject_name: string;
+      subject_cd:string;
     }
   ): Promise<any> {
     return this.http

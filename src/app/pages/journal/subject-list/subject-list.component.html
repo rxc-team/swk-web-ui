@@ -17,7 +17,7 @@
           style="width: 300px"
           formControlName="assetsType"
           (ngModelChange)="search()"
-          [nzPlaceHolder]="'common.placeholder.select' | translate: { label: 'page.subject.assets' | translate }"
+          [nzPlaceHolder]="'common.placeholder.select' | translate : { label: 'page.subject.assets' | translate }"
         >
           <nz-option [nzValue]="item.value" [nzLabel]="item.label" *ngFor="let item of assets"></nz-option>
         </nz-select>
@@ -85,11 +85,105 @@
         <td>{{ index + 1 }}</td>
         <td>{{ i.subject_key }}</td>
         <td>{{ i.default_name }}</td>
-        <td *ngIf="!status">{{ i.subject_name }}</td>
+        <td *ngIf="!status">{{ i.subject_cd }}</td>
         <td *ngIf="status">
-          <input nz-input nzSize="small" [(ngModel)]="i.subject_name" style="width: 300px" />
+          <input nz-input nzSize="small" [(ngModel)]="i.subject_cd" style="width: 200px" readonly />
+          <button
+            nz-button
+            type="button"
+            nzType="primary"
+            nzSearch
+            (click)="openModal(index)"
+            style="margin-right: 0px; height: 27px"
+          >
+            <i nz-icon nzType="search"></i>
+          </button>
+        </td>
+        <td>
+          {{ i.subject_name }}
         </td>
       </tr>
     </tbody>
   </nz-table>
 </div>
+<nz-modal
+  [(nzVisible)]="isVisible"
+  [nzTitle]="'page.datastore.pleaseSelect' | translate"
+  (nzOnCancel)="close()"
+  nzWidth="50%"
+  [nzFooter]="null"
+>
+  <ng-template nzModalContent>
+    <nz-collapse [nzBordered]="true" style="width: 100%">
+      <nz-collapse-panel [nzHeader]="'common.text.search' | translate">
+        <div>
+          <nz-row nzAlign="middle">
+            <nz-form-item style="margin-right: 25px">
+              <!-- subjectcd 输入框 -->
+              <nz-form-label nzFor="subjectcd">{{ '勘定科目コード' }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input #subjectcdInput trim="blur" style="width: 100%" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item style="margin-right: 25px">
+              <!-- subjectname 输入框 -->
+              <nz-form-label nzFor="subjectname">{{ '勘定科目名' }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input #subjectnameInput trim="blur" style="width: 100%" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item style="margin-right: 25px">
+              <nz-form-control>
+                <button nz-button [nzType]="'primary'" (click)="searchItems()">
+                  <i nz-icon nzType="search"></i>
+                  {{ 'common.button.search' | translate }}
+                </button>
+              </nz-form-control>
+            </nz-form-item>
+          </nz-row>
+        </div>
+      </nz-collapse-panel>
+    </nz-collapse>
+    <div class="solid_border" style="padding: 4px; height: 300px; overflow: auto">
+      <nz-form-label>{{ '一覧' }}</nz-form-label>
+      <ng-container *ngIf="!isContentEmpty">
+        <!-- 内容不为空时显示的表格 -->
+        <nz-table
+          #basicTable
+          [nzData]="swkSubject"
+          nzBordered="true"
+          nzSize="small"
+          style="width: 100%"
+          [nzShowPagination]="false"
+        >
+          <thead>
+            <tr>
+              <ng-container *ngFor="let col of colsWithGroup">
+                <th *ngIf="col.width" nz-resizable nzBounds="window" [nzWidth]="col.width" [nzMinWidth]="80">
+                  {{ col.title }}
+                  <nz-resize-handle nzDirection="right"></nz-resize-handle>
+                </th>
+                <th *ngIf="!col.width">
+                  {{ col.title }}
+                </th>
+              </ng-container>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of swkSubject" (dblclick)="doubleClick(item)">
+              <td>{{ item.subjectcd }}</td>
+              <td>{{ item.subjectname }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </ng-container>
+    </div>
+
+    <div style="display: flex">
+      <button nz-button nzType="primary" (click)="close()">
+        {{ 'common.button.cancel' | translate }}
+      </button>
+      <span style="margin-left: auto">{{ '合計' + selectTotal + '件' }}</span>
+    </div>
+  </ng-template>
+</nz-modal>
