@@ -72,7 +72,7 @@ export class JournalsettingTemplateComponent implements OnInit {
     // 获取台账字段
     this.fs.getFields(this.datastoreId).then((data: any[]) => {
       if (data) {
-        this.swkFields = data.filter(f => f.field_type !== 'file');
+        this.swkFields = data.filter(f => f.field_type === 'date' || f.field_type === 'number' || f.field_type === 'text');
         this.swkFields = this.swkFields.filter(f => !f.as_title);
       } else {
         this.swkFields = [];

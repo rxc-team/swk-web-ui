@@ -228,7 +228,7 @@
             <tr *ngFor="let item of selectedFields; let i = index" cdkDrag>
               <td>{{ i + 1 }}</td>
               <td>
-                <span style="color: red">*</span>
+                <span style="color: red; margin-right: '4px'" >*</span>
                 <input
                   nz-input
                   [ngModelOptions]="{ standalone: true }"
@@ -237,13 +237,27 @@
                   [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
                 />
               </td>
-              <td [ngStyle]="{ width: '100px' }">{{ item.field_type }}</td>
+              <td [ngStyle]="{ width: '100px' }" *ngIf="item.setting_method !== '4'">{{ item.field_type }}</td>
+              <td [ngStyle]="{ width: '100px' }" *ngIf="item.setting_method === '4'">
+                <span style="color: red; margin-right: '4px'" >*</span>
+                <nz-select
+                  [(ngModel)]="item.field_type"
+                  [ngModelOptions]="{ standalone: true }"
+                  nzAllowClear
+                  [ngStyle]="{ width: '90px' }"
+                >
+                  <nz-option nzValue="text" nzLabel="text"></nz-option>
+                  <nz-option nzValue="number" nzLabel="number"></nz-option>
+                  <nz-option nzValue="date" nzLabel="date"></nz-option>
+                </nz-select>
+              </td>
               <td>
                 <nz-select
                   [(ngModel)]="item.setting_method"
                   [ngModelOptions]="{ standalone: true }"
                   nzAllowClear
                   [ngStyle]="{ width: isSmall ? '220px' : '300px' }"
+                  (ngModelChange)="onSettingMethodChange($event, item)"
                 >
                   <nz-option nzValue="1" nzLabel="固定值"></nz-option>
                   <nz-option nzValue="2" nzLabel="仕訳台帳"></nz-option>
@@ -260,7 +274,7 @@
                     [ngStyle]="{ width: '220px' }"
                     [ngModelOptions]="{ standalone: true }"
                     [(ngModel)]="item.edit_content"
-                    placeholder="请输入固定值"
+                    placeholder="入力してください"
                   />
                 </ng-container>
                 <ng-container *ngIf="item.setting_method === '2'">
@@ -269,7 +283,7 @@
                     (ngModelChange)="updateFieldInfo(item)"
                     nzAllowClear
                     [ngStyle]="{ width: '220px' }"
-                    nzPlaceHolder="选择台账字段"
+                    nzPlaceHolder="フィールドを選択してください"
                     [ngModelOptions]="{ standalone: true }"
                   >
                     <nz-option
@@ -287,7 +301,7 @@
                     (ngModelChange)="updateFieldInfo(item)"
                     nzAllowClear
                     [ngStyle]="{ width: '220px' }"
-                    nzPlaceHolder="选择台账字段"
+                    nzPlaceHolder="フィールドを選択してください"
                     [ngModelOptions]="{ standalone: true }"
                   >
                     <nz-option
@@ -309,7 +323,7 @@
                   </button>
                 </ng-container>
               </td>
-              <!-- 日期形式 -->
+              <!-- 形式 -->
               <td>
                 <nz-select
                   style="width: 100%"
@@ -410,7 +424,8 @@
             <ng-container *ngFor="let data of journals">
               <!-- 主项行 -->
               <tr *ngIf="data.no" [ngClass]="{ dashboard_bg: data.no }">
-                <td>{{ data.no }}
+                <td>
+                  {{ data.no }}
                   <!-- 展开/收起按钮 -->
                   <button nz-button nzSize="small" (click)="toggleChildren(data)">
                     <i nz-icon *ngIf="data.expanded" nzType="minus"></i>

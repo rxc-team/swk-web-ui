@@ -215,7 +215,7 @@ export class JournalsettingListComponent implements OnInit {
 
     await this.fs.getFields(this.swk_datastore_Id).then((data: any[]) => {
       if (data) {
-        this.swkFields = data.filter(f => f.field_type !== 'file');
+        this.swkFields = data.filter(f => f.field_type === 'date' || f.field_type === 'number' || f.field_type === 'text');
         this.swkFields = this.swkFields.filter(f => !f.as_title);
       } else {
         this.swkFields = [];
@@ -226,7 +226,7 @@ export class JournalsettingListComponent implements OnInit {
 
     await this.fs.getFields(this.rk_datastore_Id).then((data: any[]) => {
       if (data) {
-        this.rkFields = data.filter(f => f.field_type !== 'file');
+        this.rkFields = data.filter(f => f.field_type === 'date' || f.field_type === 'number' || f.field_type === 'text');
         this.rkFields = this.rkFields.filter(f => !f.as_title);
       } else {
         this.rkFields = [];
@@ -416,11 +416,22 @@ export class JournalsettingListComponent implements OnInit {
   }
 
   addSetting() {
-    this.selectedFields.forEach((item, index) => {
+    // 字段名,字段类型非空校验
+    for (let i = 0; i < this.selectedFields.length; i++) {
+      const item = this.selectedFields[i];
       if (!item.download_name) {
         this.message.error(`ダウンロードフィールド名を空にすることはできません`);
+        return;
       }
-    });
+      if (item.setting_method === '4' && !item.field_type) {
+        this.message.error(`ダウンロードフィールドタイプを空にすることはできません`);
+        return;
+      }
+      if ((item.setting_method === '2' || item.setting_method === '3') && !item.field_id) {
+        this.message.error(`設定方法が台帳を選択する場合、フィールドを空にすることはできません`);
+        return;
+      }
+    }
     const params = {
       layout_name: this.form.controls.layoutName.value,
       char_encoding: this.form.controls.charEncoding.value,
@@ -487,9 +498,17 @@ export class JournalsettingListComponent implements OnInit {
     }
   }
 
+  // 设置方法切换
+  onSettingMethodChange(value: string, item: any) {
+    if (value === '1') {
+      item.field_type = 'text';
+    } else {
+      item.field_type = '';
+    }
+  }
+
   // 打开弹窗
   openJsonEditor(item: any): void {
-    item.field_type = 'function';
     if (item.field_id === null || item.field_id === undefined || item.field_id === '') {
       item.field_id = this.generateRandomFieldId();
     }

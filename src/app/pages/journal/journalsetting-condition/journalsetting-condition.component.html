@@ -81,18 +81,73 @@
               <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
                 <nz-form-item style="margin-bottom: 0px">
                   <nz-form-control>
-                    <nz-select style="width: 100%" [(ngModel)]="condition.con_operator">
+                    <nz-select
+                      style="width: 100%"
+                      [(ngModel)]="condition.con_operator"
+                      [nzDisabled]="condition.con_field && condition.con_field === ''"
+                    >
                       <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue="eq"></nz-option>
                       <nz-option [nzLabel]="'page.datastore.notEqual' | translate" nzValue="ne"></nz-option>
+                      <nz-option
+                        [nzLabel]="'page.datastore.greater' | translate"
+                        nzValue="gt"
+                        *ngIf="condition.con_data_type === 'number' || condition.con_data_type === 'date'"
+                      ></nz-option>
+                      <nz-option
+                        [nzLabel]="'page.datastore.greaterEqual' | translate"
+                        nzValue="gte"
+                        *ngIf="condition.con_data_type === 'number' || condition.con_data_type === 'date'"
+                      ></nz-option>
+                      <nz-option
+                        [nzLabel]="'page.datastore.less' | translate"
+                        nzValue="lt"
+                        *ngIf="condition.con_data_type === 'number' || condition.con_data_type === 'date'"
+                      ></nz-option>
+                      <nz-option
+                        [nzLabel]="'page.datastore.lessEqual' | translate"
+                        nzValue="lte"
+                        *ngIf="condition.con_data_type === 'number' || condition.con_data_type === 'date'"
+                      ></nz-option>
                     </nz-select>
                   </nz-form-control>
                 </nz-form-item>
               </div>
 
               <!-- 条件值 -->
-              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+              <div
+                nz-col
+                [nzXs]="4"
+                [nzSm]="4"
+                [nzMd]="4"
+                [nzLg]="4"
+                style="margin-right: 10px"
+                *ngIf="condition.con_data_type !== 'date'"
+              >
                 <nz-form-control>
-                  <input nz-input style="width: 100%" [(ngModel)]="condition.con_value" trim="blur" />
+                  <input
+                    nz-input
+                    style="width: 100%"
+                    [(ngModel)]="condition.con_value"
+                    trim="blur"
+                    [disabled]="condition.con_field && condition.con_field === ''"
+                  />
+                </nz-form-control>
+              </div>
+              <div
+                nz-col
+                [nzXs]="4"
+                [nzSm]="4"
+                [nzMd]="4"
+                [nzLg]="4"
+                style="margin-right: 10px"
+                *ngIf="condition.con_data_type === 'date'"
+              >
+                <nz-form-control>
+                  <nz-date-picker
+                    style="width: 100%"
+                    [(ngModel)]="condition.con_value"
+                    [nzDisabled]="condition.con_field && condition.con_field === ''"
+                  ></nz-date-picker>
                 </nz-form-control>
               </div>
 
@@ -385,7 +440,7 @@
                       (ngModelChange)="onElseCustomFieldChange($event, ifIndex, fieldIndex)"
                     >
                       <nz-option
-                        *ngFor="let item of strAndNumberSwkFields"
+                        *ngFor="let item of strSwkFields"
                         [nzLabel]="item.field_name | translate"
                         [nzValue]="item.field_id"
                       ></nz-option>

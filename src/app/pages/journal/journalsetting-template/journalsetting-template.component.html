@@ -14,7 +14,7 @@
       >
         {{ item.template_name }}
         <button nz-button nzType="primary" style="margin-left: auto" (click)="openTemplateDetailsModal(item)">
-          详情
+          詳細
         </button>
         <button nz-button nzDanger (click)="removeTemplate(item.template_id)" style="margin-left: 10px">
           <i nz-icon nzType="delete"></i>
@@ -70,15 +70,44 @@
                     <nz-select style="width: 100%" [(ngModel)]="condition.con_operator" [nzDisabled]="true">
                       <nz-option [nzLabel]="'page.datastore.equal' | translate" nzValue="eq"></nz-option>
                       <nz-option [nzLabel]="'page.datastore.notEqual' | translate" nzValue="ne"></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.greater' | translate" nzValue="gt"></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.greaterEqual' | translate" nzValue="gte"></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.less' | translate" nzValue="lt"></nz-option>
+                      <nz-option [nzLabel]="'page.datastore.lessEqual' | translate" nzValue="lte"></nz-option>
                     </nz-select>
                   </nz-form-control>
                 </nz-form-item>
               </div>
 
               <!-- 条件值 -->
-              <div nz-col [nzXs]="4" [nzSm]="4" [nzMd]="4" [nzLg]="4" style="margin-right: 10px">
+              <div
+                nz-col
+                [nzXs]="4"
+                [nzSm]="4"
+                [nzMd]="4"
+                [nzLg]="4"
+                style="margin-right: 10px"
+                *ngIf="condition.con_data_type !== 'date'"
+              >
                 <nz-form-control>
                   <input nz-input style="width: 100%" [(ngModel)]="condition.con_value" trim="blur" [disabled]="true" />
+                </nz-form-control>
+              </div>
+              <div
+                nz-col
+                [nzXs]="4"
+                [nzSm]="4"
+                [nzMd]="4"
+                [nzLg]="4"
+                style="margin-right: 10px"
+                *ngIf="condition.con_data_type === 'date'"
+              >
+                <nz-form-control>
+                  <nz-date-picker
+                    style="width: 100%"
+                    [(ngModel)]="condition.con_value"
+                    [disabled]="true"
+                  ></nz-date-picker>
                 </nz-form-control>
               </div>
             </div>

@@ -80,6 +80,7 @@ export class JournalsettingConditionComponent implements OnInit {
   // 可选台账字段
   swkFields: any[] = [];
   numberSwkFields: any[] = [];
+  strSwkFields: any[] = [];
   strAndNumberSwkFields: any[] = [];
   // 模板窗口可视标识
   isTemplateModalVisible = false;
@@ -96,7 +97,7 @@ export class JournalsettingConditionComponent implements OnInit {
     // modal框内查询可选字段
     this.fs.getFields(this.datastoreId).then((data: any[]) => {
       if (data) {
-        this.swkFields = data.filter(f => f.field_type !== 'file');
+        this.swkFields = data.filter(f => f.field_type === 'date' || f.field_type === 'number' || f.field_type === 'text');
         this.swkFields = this.swkFields.filter(f => !f.as_title);
       } else {
         this.swkFields = [];
@@ -105,6 +106,7 @@ export class JournalsettingConditionComponent implements OnInit {
       // swk字段类型筛选
       this.numberSwkFields = this.swkFields.filter(f => f.field_type === 'number');
       this.strAndNumberSwkFields = this.swkFields.filter(f => f.field_type === 'number' || f.field_type === 'text');
+      this.strSwkFields = this.swkFields.filter(f => f.field_type === 'text');
       this.isLoading = false;
     });
   }
@@ -185,7 +187,7 @@ export class JournalsettingConditionComponent implements OnInit {
       con_field: '',
       con_operator: '',
       con_value: '',
-      con_data_type: 'text'
+      con_data_type: ''
     });
   }
 

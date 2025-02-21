@@ -37,7 +37,7 @@ export class JournalService {
     param: {
       pattern_id: string;
       subject_key: string;
-      subject_cd:string;
+      subject_cd: string;
       lending_division?: string;
       subject_name?: string;
       amount_name?: string;
@@ -137,37 +137,6 @@ export class JournalService {
   findDownloadSettings(appId: string): Promise<any> {
     return this.http
       .get(`journal/download/findSettings`, {
-        params: {
-          appId: appId
-        },
-        headers: {
-          token: 'true'
-        }
-      })
-      .toPromise();
-  }
-
-  /**
-   * @description: 添加分录出力设定
-   * @return
-   */
-  addCondition(param: any): Promise<any> {
-    return this.http
-      .post(`condition/conditions`, param, {
-        headers: {
-          token: 'true'
-        }
-      })
-      .toPromise();
-  }
-
-  /**
-   * @description: 获取条件模板
-   * @return: 返回后台数据
-   */
-  findConditions(appId: string): Promise<any> {
-    return this.http
-      .get(`condition/conditions`, {
         params: {
           appId: appId
         },
