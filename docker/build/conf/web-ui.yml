@@ -18,7 +18,7 @@ spec:
     spec: 
       containers: 
       - name: web-ui 
-        image: gcr.io/{{ PROJECT_ID }}/web-ui:{{ IMAGE }}
+        image: us-docker.pkg.dev/{{ PROJECT_ID }}/gcr.io/web-ui:{{ IMAGE }}
         imagePullPolicy: Always 
         env: 
           - name: ENV 
